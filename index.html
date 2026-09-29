@@ -18,108 +18,128 @@
       font-family: 'Times New Roman', Times, serif;
     }
 
-    /* CSS CETAK & KERTAS */
+    /* =========================================================
+       LAYOUT DOKUMEN RESMI + PRINT ENGINE
+       Setiap dokumen = 1 lembar fisik. Halaman 1 Surat Tugas,
+       halaman 2 SPPD. Tidak boleh saling menumpuk.
+       ========================================================= */
     @media print {
-      body * {
-        visibility: hidden;
+      @page { margin: 0; }
+      html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
       }
-      #print-area, #print-area * {
-        visibility: visible;
-      }
+      body * { visibility: hidden !important; }
+      #print-area, #print-area * { visibility: visible !important; }
       #print-area {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        background: white;
-        padding: 0;
-        margin: 0;
+        display: block !important;
+        position: static !important;
+        width: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+        box-shadow: none !important;
       }
-      .page-break {
-        page-break-after: always;
-        break-after: page;
+      #print-area .document-page {
+        margin: 0 !important;
+        box-shadow: none !important;
       }
-      .no-print {
-        display: none !important;
+      .document-page.page-break {
+        page-break-after: always !important;
+        break-after: page !important;
       }
+      #page-2-sppd {
+        page-break-before: always !important;
+        break-before: page !important;
+      }
+      .document-page:last-child {
+        page-break-after: auto !important;
+        break-after: auto !important;
+      }
+      .no-print { display: none !important; }
     }
 
-    /* DYNAMIC PAPER SIZES PREVIEW */
-    .paper-a4 {
-      width: 210mm;
-      min-height: 297mm;
-    }
-    .paper-f4 {
-      width: 215mm;
-      min-height: 330mm;
-    }
-
-    /* SETIAP HALAMAN PREVIEW HARUS MENJADI LEMBAR PUTIH UTUH */
-    .document-page {
-      width: 100%;
-      min-height: 950px;
-      background: #fff !important;
-      color: #000;
-      box-sizing: border-box;
-      flex: 0 0 auto;
-      position: relative;
-      overflow: visible;
-    }
+    .paper-a4 { width: 210mm; }
+    .paper-f4 { width: 215mm; }
 
     #print-area {
-      background: transparent !important;
       box-sizing: border-box;
+      background: transparent;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10mm;
     }
 
-    /* KOP SURAT - FORMAT RESMI, TIDAK TERKESAN KAKU */
+    /* Lembar fisik: ukurannya persis mengikuti pilihan A4/F4 */
+    .document-page {
+      width: 210mm;
+      height: 297mm;
+      min-height: 297mm;
+      box-sizing: border-box;
+      flex: 0 0 297mm;
+      position: relative;
+      overflow: hidden;
+      background: #fff !important;
+      color: #000;
+      padding: 14mm 16mm 13mm;
+      margin: 0;
+      box-shadow: 0 8px 30px rgba(15,23,42,.25);
+      font-size: 11pt;
+      line-height: 1.35;
+    }
+    #print-area.paper-f4 .document-page {
+      width: 215mm;
+      height: 330mm;
+      min-height: 330mm;
+      flex-basis: 330mm;
+    }
+
+    /* Kop surat resmi: logo kiri, blok identitas benar-benar simetris */
     .kop-surat {
       display: grid;
-      grid-template-columns: 82px minmax(0, 1fr) 82px;
+      grid-template-columns: 25mm minmax(0,1fr) 25mm;
       align-items: center;
       width: 100%;
-      min-height: 86px;
-      padding: 2px 0 8px;
+      min-height: 29mm;
+      padding: 0 0 4mm;
       box-sizing: border-box;
     }
     .kop-surat .kop-logo {
-      width: 72px;
-      height: 72px;
+      width: 22mm;
+      height: 22mm;
       object-fit: contain;
       justify-self: center;
     }
-    .kop-surat .kop-spacer {
-      width: 82px;
-      height: 1px;
-    }
+    .kop-surat .kop-spacer { width: 25mm; height: 1px; }
     .kop-surat .kop-center {
       text-align: center;
-      line-height: 1.15;
+      line-height: 1.12;
+      padding: 0 2mm;
     }
     .kop-surat .kop-center .kop-jenis {
-      font-size: 15px;
+      font-size: 12.5pt;
       font-weight: 700;
       text-transform: uppercase;
       margin: 0;
     }
     .kop-surat .kop-center .kop-nama {
-      font-size: 19px;
+      font-size: 15.5pt;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: .4px;
-      margin: 1px 0 2px;
+      letter-spacing: .25px;
+      margin: 1mm 0 .8mm;
     }
-    .kop-surat .kop-center .kop-detail {
-      font-size: 10.5px;
-      margin: 0;
-    }
+    .kop-surat .kop-center .kop-detail { font-size: 8.5pt; margin: 0; }
     .kop-surat .kop-center .kop-kota {
-      font-size: 11px;
+      font-size: 9pt;
       font-weight: 700;
-      letter-spacing: .4px;
-      margin-top: 2px;
+      letter-spacing: .3px;
+      margin-top: .8mm;
     }
     .border-kop {
-      border-bottom: 3px solid #111;
+      border-bottom: 2.5px solid #111;
       position: relative;
     }
     .border-kop::after {
@@ -127,49 +147,51 @@
       position: absolute;
       left: 0;
       right: 0;
-      bottom: -6px;
+      bottom: -4.5px;
       border-bottom: 1px solid #111;
     }
-
     .kop-surat.kop-sppd {
-      grid-template-columns: 70px minmax(0, 1fr) 70px;
-      min-height: 70px;
-      padding-bottom: 7px;
+      grid-template-columns: 23mm minmax(0,1fr) 23mm;
+      min-height: 27mm;
+      padding-bottom: 3.5mm;
     }
-    .kop-surat.kop-sppd .kop-logo {
-      width: 58px;
-      height: 58px;
-    }
-    .kop-surat.kop-sppd .kop-spacer {
-      width: 70px;
-    }
-    .kop-surat.kop-sppd .kop-center .kop-jenis {
-      font-size: 13px;
-    }
-    .kop-surat.kop-sppd .kop-center .kop-nama {
-      font-size: 17px;
-    }
-    .kop-surat.kop-sppd .kop-center .kop-detail {
-      font-size: 9px;
-    }
-    .kop-surat.kop-sppd .kop-center .kop-kota {
-      font-size: 9.5px;
-    }
+    .kop-surat.kop-sppd .kop-logo { width: 19mm; height: 19mm; }
+    .kop-surat.kop-sppd .kop-spacer { width: 23mm; }
+    .kop-surat.kop-sppd .kop-center .kop-jenis { font-size: 11pt; }
+    .kop-surat.kop-sppd .kop-center .kop-nama { font-size: 14pt; }
+    .kop-surat.kop-sppd .kop-center .kop-detail { font-size: 7.7pt; }
+    .kop-surat.kop-sppd .kop-center .kop-kota { font-size: 8pt; }
 
-    @media print {
-      #print-area {
-        background: transparent !important;
-      }
-      .document-page {
-        background: #fff !important;
-      }
+    /* Surat Tugas */
+    #page-1-surat-tugas .surat-tugas-body { padding-top: 1mm; }
+    #page-1-surat-tugas table { line-height: 1.35; }
+    #page-1-surat-tugas .ttd-surat { margin-top: 8mm; }
+
+    /* SPPD dibuat lebih rapat secara proporsional agar muat 1 lembar,
+       tetapi tetap diberi ruang putih yang cukup untuk dibaca. */
+    #page-2-sppd { font-size: 9pt; line-height: 1.25; }
+    #page-2-sppd .sppd-title { margin: 4mm 0 4mm; }
+    #page-2-sppd .sppd-grid { font-size: 8.1pt; line-height: 1.18; }
+    #page-2-sppd .sppd-grid, #page-2-sppd .sppd-grid > div, #page-2-sppd .sppd-grid table { break-inside: avoid; }
+    #page-2-sppd .sppd-grid table td { padding: 1.5mm 1.6mm; }
+    #page-2-sppd .sppd-right { font-size: 7.8pt; line-height: 1.2; }
+    #page-2-sppd .sppd-right > div { padding-bottom: 2.5mm; margin-bottom: 2.5mm; }
+    #page-2-sppd .sppd-right .sppd-sign { margin-top: 2mm; }
+    #page-2-sppd .sppd-right .sppd-sign-gap { height: 7mm; }
+    #page-2-sppd .sppd-footnote { font-size: 6.8pt; line-height: 1.2; margin-top: 2mm; }
+
+    .preview-document-wrap {
+      width: 100%;
+      max-height: calc(100vh - 125px);
+      overflow-y: auto;
+      overflow-x: auto;
+      padding: 10mm 8mm 16mm;
+      box-sizing: border-box;
     }
+    .preview-document-wrap #print-area { margin: 0 auto; }
 
     /* SPPD TABLE BORDER STYLES */
-    .table-sppd {
-      border-collapse: collapse;
-      width: 100%;
-    }
+    .table-sppd { border-collapse: collapse; width: 100%; }
     .table-sppd th, .table-sppd td {
       border: 1px solid #000;
       padding: 4px 6px;
@@ -370,15 +392,15 @@
               <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label class="block text-xs font-semibold text-slate-600 mb-1">Tanggal Berangkat *</label>
-                  <input type="text" id="surat-tgl-berangkat" required class="w-full px-3 py-2 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500" placeholder="Contoh: 18 September 2026">
+                  <input type="text" id="surat-tgl-berangkat" required class="w-full px-3 py-2 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500" placeholder="Contoh: Jumat, 18 September 2026">
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-slate-600 mb-1">Tanggal Kembali *</label>
-                  <input type="text" id="surat-tgl-kembali" required class="w-full px-3 py-2 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500" placeholder="Contoh: 18 September 2026">
+                  <input type="text" id="surat-tgl-kembali" required class="w-full px-3 py-2 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500" placeholder="Contoh: Jumat, 18 September 2026">
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-slate-600 mb-1">Tanggal Surat Diterbitkan *</label>
-                  <input type="text" id="surat-tgl-surat" required class="w-full px-3 py-2 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500" placeholder="Contoh: 18 September 2026">
+                  <input type="text" id="surat-tgl-surat" required class="w-full px-3 py-2 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500" placeholder="Contoh: Jumat, 18 September 2026">
                 </div>
               </div>
             </div>
@@ -808,11 +830,11 @@
       </div>
 
       <!-- CONTAINER DOKUMEN CETAK 2 HALAMAN -->
-      <div class="max-w-5xl w-full mx-auto my-4 flex flex-col items-center gap-8 overflow-y-auto">
-        <div id="print-area" class="paper-a4 bg-transparent p-8 sm:p-12 shadow-2xl text-black surat-font text-slate-900 leading-normal">
+      <div class="preview-document-wrap">
+        <div id="print-area" class="paper-a4 text-black surat-font text-slate-900 leading-normal">
           
           <!-- ================= HALAMAN 1: SURAT TUGAS ================= -->
-          <div id="page-1-surat-tugas" class="document-page page-break flex flex-col justify-between pb-6">
+          <div id="page-1-surat-tugas" class="document-page page-break flex flex-col">
             <div>
               <!-- KOP SURAT HALAMAN 1 -->
               <div class="kop-surat border-kop mb-6">
@@ -900,7 +922,7 @@
                 <tr>
                   <td class="w-32 py-1.5">Berangkat</td>
                   <td class="w-4 py-1.5">:</td>
-                  <td class="font-bold py-1.5" id="print-tgl-berangkat-1">18 September 2026</td>
+                  <td class="font-bold py-1.5" id="print-tgl-berangkat-1">Jumat, 18 September 2026</td>
                 </tr>
                 <tr>
                   <td class="py-1.5">Tempat</td>
@@ -922,7 +944,7 @@
             <!-- TANDA TANGAN HALAMAN 1 -->
             <div class="flex justify-end">
               <div class="text-center w-64 text-sm">
-                <p id="print-ttd-kota-tgl">Kasiman, 18 September 2026</p>
+                <p id="print-ttd-kota-tgl">Kasiman, Jumat, 18 September 2026</p>
                 <p class="mb-20">Kepala Sekolah</p>
                 <p class="font-bold underline" id="print-ttd-kepsek-nama-1">Heru Kasiyanto, S.Kom.</p>
               </div>
@@ -930,7 +952,7 @@
           </div>
 
           <!-- ================= HALAMAN 2: SPPD ================= -->
-          <div id="page-2-sppd" class="document-page pt-4">
+          <div id="page-2-sppd" class="document-page">
             <!-- KOP SURAT HALAMAN 2 -->
             <div class="kop-surat kop-sppd border-kop mb-4">
               <div><img id="print-logo-2" src="https://res.cloudinary.com/bwmgqxug/image/upload/v1789022731/logo95_-_Copy.png" class="kop-logo" alt="Logo Sekolah"></div>
@@ -945,13 +967,13 @@
             </div>
 
             <!-- JUDUL SPPD -->
-            <div class="text-center my-3">
+            <div class="text-center sppd-title">
               <h2 class="font-bold text-base underline uppercase">SURAT PERINTAH PERJALANAN DINAS (SPPD)</h2>
               <p class="text-xs font-bold" id="print-no-sppd">Nomor: 421.5/12......./SMKS-BMK/IX/2026</p>
             </div>
 
             <!-- LAYOUT TABLE GRID SPPD 2 KOLOM SIMETRIS -->
-            <div class="grid grid-cols-12 border border-black text-xs">
+            <div class="grid grid-cols-12 border border-black sppd-grid">
               
               <!-- KOLOM KIRI (NO 1 - 9) -->
               <div class="col-span-6 border-r border-black p-0">
@@ -1009,11 +1031,11 @@
                   </tr>
                   <tr class="border-b border-black">
                     <td class="p-1 align-top border-r border-black">b. Tanggal berangkat</td>
-                    <td class="p-1 align-top" id="print-sppd-tgl-berangkat">: 18-Sep-26</td>
+                    <td class="p-1 align-top" id="print-sppd-tgl-berangkat">: Jumat, 18 September 2026</td>
                   </tr>
                   <tr class="border-b border-black">
                     <td class="p-1 align-top border-r border-black">c. Tanggal harus kembali</td>
-                    <td class="p-1 align-top" id="print-sppd-tgl-kembali">: 18-Sep-26</td>
+                    <td class="p-1 align-top" id="print-sppd-tgl-kembali">: Jumat, 18 September 2026</td>
                   </tr>
                   <tr class="border-b border-black">
                     <td class="p-1 text-center align-top border-r border-black" rowspan="2">8.</td>
@@ -1041,19 +1063,19 @@
                     <tr>
                       <td>Pada Tanggal</td>
                       <td class="px-1">:</td>
-                      <td id="print-sppd-keluar-tgl">18 September 2026</td>
+                      <td id="print-sppd-keluar-tgl">Jumat, 18 September 2026</td>
                     </tr>
                   </table>
-                  <div class="text-center mt-2 w-48 ml-auto">
+                  <div class="text-center mt-2 w-48 ml-auto sppd-sign">
                     <p id="print-sppd-ttd-jabatan">Kepala SMKS Budi Mulya</p>
-                    <div class="h-16"></div>
+                    <div class="h-10"></div>
                     <p class="font-bold underline" id="print-sppd-ttd-nama">Heru Kasiyanto, S.Kom</p>
                   </div>
                 </div>
               </div>
 
               <!-- KOLOM KANAN (STEMPEL & LEMBAR BERANGKAT / TIBA) -->
-              <div class="col-span-6 p-2 text-[11px] space-y-3">
+              <div class="col-span-6 p-2 sppd-right space-y-3">
                 
                 <!-- LEMBAR I -->
                 <div class="border-b border-black pb-2">
@@ -1062,12 +1084,12 @@
                     <div class="col-span-11">
                       <p>Berangkat dari : <span id="print-sppd-i-dari">SMKS Budi Mulya</span></p>
                       <p class="text-[10px] text-slate-600">(Tempat Kedudukan)</p>
-                      <p>Pada Tanggal : <span id="print-sppd-i-tgl">18 September 2026</span></p>
+                      <p>Pada Tanggal : <span id="print-sppd-i-tgl">Jumat, 18 September 2026</span></p>
                       <p>Menuju Ke : <span id="print-sppd-i-ke">Cabdin Bojonegoro</span></p>
                       <div class="text-center mt-2">
                         <p>Pejabat yang berwenang</p>
                         <p id="print-sppd-i-jabatan">Kepala SMKS Budi Mulya</p>
-                        <div class="h-8"></div>
+                        <div class="sppd-sign-gap"></div>
                         <p class="font-bold underline" id="print-sppd-i-nama">Heru Kasiyanto, S.Kom</p>
                       </div>
                     </div>
@@ -1150,7 +1172,7 @@
                     <div class="col-span-11">
                       <p>Tiba Kembali di : <span id="print-sppd-v-kembali">SMKS Budi Mulya</span></p>
                       <p class="text-[10px] text-slate-600">(Tempat Kedudukan)</p>
-                      <p>Pada tanggal : <span id="print-sppd-v-tgl">18 September 2026</span></p>
+                      <p>Pada tanggal : <span id="print-sppd-v-tgl">Jumat, 18 September 2026</span></p>
                       <p>Pejabat yang berwenang</p>
                       <p id="print-sppd-v-jabatan">Kepala SMKS Budi Mulya</p>
                       <div class="h-6"></div>
@@ -1160,7 +1182,7 @@
                 </div>
 
                 <!-- FOOTNOTE SPPD LEGISLASI HUKUM -->
-                <div class="text-[9px] leading-tight text-justify">
+                <div class="sppd-footnote text-[9px] leading-tight text-justify">
                   Telah diperiksa dengan keterangan bahwa perjalanan tersebut benar-benar dilakukan atas perintah dan semata-mata untuk kepentingan jabatan dan pejabat memberi perintah.
                   <p class="mt-1">
                     Pejabat yang berwenang menerbitkan SPPD pegawai yang melakukan Perjalanan Dinas, pejabat yang mengesahkan tanggal berangkat / tiba serta Bendahara bertanggung jawab berdasarkan peraturan keuangan negara, apabila Negara menderita kerugian akibat kesalahan dan kealpaannya (angka 8, Lampiran Surat Menteri Keuangan tanggal 30 April 1975 No. B.296/MK/II/74)
@@ -1804,7 +1826,7 @@
       document.getElementById('surat-alat-angkut').value = 'Kendaraan Umum';
       document.getElementById('surat-lama-perjalanan').value = '1 Hari';
 
-      const nowStr = "18 September 2026";
+      const nowStr = formatTanggalIndonesia(new Date(), true);
       document.getElementById('surat-tgl-berangkat').value = nowStr;
       document.getElementById('surat-tgl-kembali').value = nowStr;
       document.getElementById('surat-tgl-surat').value = nowStr;
@@ -2071,6 +2093,46 @@
     /* ==========================================================================
        MODAL PREVIEW & DYNAMIC PAPER PRINT ENGINE (A4 / F4)
        ========================================================================== */
+    /* =========================================================
+       FORMAT TANGGAL INDONESIA
+       Menerima YYYY-MM-DD, DD-MM-YYYY, tanggal Indonesia,
+       maupun string Date dari Google Sheets.
+       ========================================================= */
+    function parseTanggalIndonesia(value) {
+      if (!value) return null;
+      const raw = String(value).trim();
+      const bulan = {
+        januari:0, februari:1, maret:2, april:3, mei:4, juni:5,
+        juli:6, agustus:7, september:8, oktober:9, november:10, desember:11
+      };
+      let m = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+      if (m) return new Date(Number(m[1]), Number(m[2])-1, Number(m[3]));
+      m = raw.match(/^(\d{1,2})[-\/]([A-Za-z]+)[-\/](\d{2,4})$/);
+      if (m) {
+        const key = m[2].toLowerCase();
+        if (bulan[key] !== undefined) {
+          let y = Number(m[3]); if (y < 100) y += 2000;
+          return new Date(y, bulan[key], Number(m[1]));
+        }
+      }
+      m = raw.match(/^(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})$/);
+      if (m) {
+        const key = m[2].toLowerCase();
+        if (bulan[key] !== undefined) return new Date(Number(m[3]), bulan[key], Number(m[1]));
+      }
+      const d = new Date(raw);
+      return Number.isNaN(d.getTime()) ? null : d;
+    }
+
+    function formatTanggalIndonesia(value, withDay = false) {
+      const d = parseTanggalIndonesia(value);
+      if (!d) return value || '-';
+      const hari = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+      const bulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+      const text = `${d.getDate()} ${bulan[d.getMonth()]} ${d.getFullYear()}`;
+      return withDay ? `${hari[d.getDay()]}, ${text}` : text;
+    }
+
     function setPaperSize(size) {
       selectedPaperSize = size;
       const btnA4 = document.getElementById('btn-paper-a4');
@@ -2081,13 +2143,13 @@
       if (size === 'a4') {
         btnA4.className = "px-3 py-1 text-xs font-bold rounded-md bg-indigo-600 text-white transition";
         btnF4.className = "px-3 py-1 text-xs font-bold rounded-md text-slate-300 hover:text-white transition";
-        paperContainer.className = "paper-a4 bg-transparent p-8 sm:p-12 shadow-2xl text-black surat-font text-slate-900 leading-normal";
-        dynamicStyle.innerHTML = `@page { size: 210mm 297mm; margin: 10mm 15mm; }`;
+        paperContainer.className = "paper-a4 text-black surat-font text-slate-900 leading-normal";
+        dynamicStyle.innerHTML = `@page { size: A4 portrait; margin: 0; }`;
       } else {
         btnF4.className = "px-3 py-1 text-xs font-bold rounded-md bg-indigo-600 text-white transition";
         btnA4.className = "px-3 py-1 text-xs font-bold rounded-md text-slate-300 hover:text-white transition";
-        paperContainer.className = "paper-f4 bg-transparent p-8 sm:p-12 shadow-2xl text-black surat-font text-slate-900 leading-normal";
-        dynamicStyle.innerHTML = `@page { size: 215mm 330mm; margin: 10mm 15mm; }`;
+        paperContainer.className = "paper-f4 text-black surat-font text-slate-900 leading-normal";
+        dynamicStyle.innerHTML = `@page { size: 215mm 330mm; margin: 0; }`;
       }
     }
 
@@ -2121,10 +2183,10 @@
       document.getElementById('print-guru-jabatan').textContent = s.jabatan_guru;
       document.getElementById('print-guru-unit').textContent = s.unit_guru;
 
-      document.getElementById('print-tgl-berangkat-1').textContent = s.tgl_berangkat;
+      document.getElementById('print-tgl-berangkat-1').textContent = formatTanggalIndonesia(s.tgl_berangkat, true);
       document.getElementById('print-tempat-tujuan-1').textContent = s.tempat_tujuan;
       document.getElementById('print-keperluan-1').textContent = s.keperluan;
-      document.getElementById('print-ttd-kota-tgl').textContent = `${settingsData.kota_sekolah}, ${s.tgl_surat}`;
+      document.getElementById('print-ttd-kota-tgl').textContent = `${settingsData.kota_sekolah}, ${formatTanggalIndonesia(s.tgl_surat, true)}`;
       document.getElementById('print-ttd-kepsek-nama-1').textContent = settingsData.nama_kepsek;
 
       // Populate Page 2 (SPPD)
@@ -2138,23 +2200,23 @@
       document.getElementById('print-sppd-berangkat-dari').textContent = `: ${s.tempat_berangkat}`;
       document.getElementById('print-sppd-tujuan').textContent = `: ${s.tempat_tujuan}`;
       document.getElementById('print-sppd-lama').textContent = `: ${s.lama_perjalanan}`;
-      document.getElementById('print-sppd-tgl-berangkat').textContent = `: ${s.tgl_berangkat}`;
-      document.getElementById('print-sppd-tgl-kembali').textContent = `: ${s.tgl_kembali}`;
+      document.getElementById('print-sppd-tgl-berangkat').textContent = `: ${formatTanggalIndonesia(s.tgl_berangkat, true)}`;
+      document.getElementById('print-sppd-tgl-kembali').textContent = `: ${formatTanggalIndonesia(s.tgl_kembali, true)}`;
 
       document.getElementById('print-sppd-keluar-di').textContent = settingsData.kota_sekolah;
-      document.getElementById('print-sppd-keluar-tgl').textContent = s.tgl_surat;
+      document.getElementById('print-sppd-keluar-tgl').textContent = formatTanggalIndonesia(s.tgl_surat, true);
       document.getElementById('print-sppd-ttd-jabatan').textContent = settingsData.jabatan_kepsek;
       document.getElementById('print-sppd-ttd-nama').textContent = settingsData.nama_kepsek;
 
       // SPPD Kolom Kanan
       document.getElementById('print-sppd-i-dari').textContent = s.tempat_berangkat;
-      document.getElementById('print-sppd-i-tgl').textContent = s.tgl_berangkat;
+      document.getElementById('print-sppd-i-tgl').textContent = formatTanggalIndonesia(s.tgl_berangkat, true);
       document.getElementById('print-sppd-i-ke').textContent = s.tempat_tujuan;
       document.getElementById('print-sppd-i-jabatan').textContent = settingsData.jabatan_kepsek;
       document.getElementById('print-sppd-i-nama').textContent = settingsData.nama_kepsek;
 
       document.getElementById('print-sppd-v-kembali').textContent = s.tempat_berangkat;
-      document.getElementById('print-sppd-v-tgl').textContent = s.tgl_kembali;
+      document.getElementById('print-sppd-v-tgl').textContent = formatTanggalIndonesia(s.tgl_kembali, true);
       document.getElementById('print-sppd-v-jabatan').textContent = settingsData.jabatan_kepsek;
       document.getElementById('print-sppd-v-nama').textContent = settingsData.nama_kepsek;
 
