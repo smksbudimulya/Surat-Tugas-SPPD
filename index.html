@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Surat & SPPD SMKS Budi Mulya</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts Inter & Times New Roman for Print -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+/* FORMAT CETAK DOKUMEN */
+    .surat-font {
+      font-family: 'Times New Roman', Times, serif;
+    }
+
+    /* CSS CETAK & KERTAS */
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #print-area, #print-area * {
+        visibility: visible;
+      }
+      #print-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        background: white;
+        padding: 0;
+        margin: 0;
+      }
+      .page-break {
+        page-break-after: always;
+        break-after: page;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+
+    /* DYNAMIC PAPER SIZES PREVIEW */
+    .paper-a4 {
+      width: 210mm;
+      min-height: 297mm;
+    }
+    .paper-f4 {
+      width: 215mm;
+      min-height: 330mm;
+    }
+
+    /* KOP SURAT DOUBLE BORDER */
+    .border-kop {
+      border-bottom: 3px solid #000;
+      position: relative;
+    }
+    .border-kop::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      right: 0;
+      border-bottom: 1px solid #000;
+    }
+
+    /* SPPD TABLE BORDER STYLES */
+    .table-sppd {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    .table-sppd th, .table-sppd td {
+      border: 1px solid #000;
+      padding: 4px 6px;
+      vertical-align: top;
+      font-size: 13px;
+    }
+  </style>
+
+  <!-- DYNAMIC PRINT STYLESHEET HOLDER -->
+  <style id="dynamic-paper-print"></style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased">
+
+  <!-- APP CONTAINER -->
+  <div id="app" class="min-h-screen flex flex-col">
+    
+    <!-- NAVBAR INTERAKTIF -->
+    <header class="bg-indigo-900 text-white shadow-md no-print">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('dashboard')">
+          <img src="https://res.cloudinary.com/bwmgqxug/image/upload/v1789022731/logo95_-_Copy.png" class="w-10 h-10 bg-white rounded-full p-1 shadow" alt="Logo">
+          <div>
+            <h1 class="font-bold text-lg leading-tight">E-Surat & SPPD</h1>
+            <p class="text-xs text-indigo-200" id="school-name-nav">SMKS Budi Mulya</p>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-3">
+          <!-- USER STATUS / ADMIN LOGIN BUTTON -->
+          <div id="nav-auth-container" class="flex items-center space-x-2">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT WRAPPER -->
+    <div class="flex-1 flex flex-col md:flex-row max-w-7xl w-full mx-auto p-4 md:p-6 gap-6 no-print">
+      
+      <!-- SIDEBAR NAVIGATION -->
+      <aside id="sidebar" class="w-full md:w-64 bg-white rounded-xl shadow-sm border border-slate-200 p-4 h-fit">
+        <nav class="space-y-1" id="menu-container">
+          <!-- Menus injected dynamically based on role -->
+        </nav>
+      </aside>
+
+      <!-- MAIN VIEW PANEL -->
+      <main class="flex-1 bg-white rounded-xl shadow-sm border border-slate-200 p-6 overflow-x-auto min-h-[500px]">
+        
+        <!-- VIEW: DASHBOARD -->
+        <div id="view-dashboard" class="space-y-6">
+          <div class="flex justify-between items-center border-b pb-4">
+            <div>
+              <h2 class="text-xl font-bold text-slate-800">Dashboard Utama</h2>
+              <p class="text-xs text-slate-500">Ringkasan aktivitas pembuatan surat tugas & perjalanan dinas</p>
+            </div>
+            <button onclick="switchView('form-surat')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm px-4 py-2 rounded-lg shadow flex items-center gap-2">
+              <i class="fa-solid fa-plus"></i> Buat Surat Baru
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="p-5 bg-gradient-to-br from-indigo-500 to-indigo-700 text-white rounded-xl shadow">
+              <p class="text-xs text-indigo-100 font-medium">Total Surat Terbit</p>
+              <h3 class="text-3xl font-extrabold mt-1" id="stat-total-surat">0</h3>
+              <p class="text-xs text-indigo-200 mt-2"><i class="fa-solid fa-file-lines mr-1"></i> Surat Tugas & SPPD</p>
+            </div>
+            <div class="p-5 bg-gradient-to-br from-emerald-500 to-emerald-700 text-white rounded-xl shadow">
+              <p class="text-xs text-emerald-100 font-medium">Jumlah Guru Terdaftar</p>
+              <h3 class="text-3xl font-extrabold mt-1" id="stat-total-guru">0</h3>
+              <p class="text-xs text-emerald-200 mt-2"><i class="fa-solid fa-users mr-1"></i> Data Pegawai</p>
+            </div>
+            <div class="p-5 bg-gradient-to-br from-amber-500 to-amber-700 text-white rounded-xl shadow">
+              <p class="text-xs text-amber-100 font-medium">Kepala Sekolah Aktif</p>
+              <h3 class="text-lg font-bold mt-2 truncate" id="stat-nama-kepsek">-</h3>
+              <p class="text-xs text-amber-200 mt-1" id="stat-nip-kepsek">NIP: -</p>
+            </div>
+          </div>
+
+          <!-- RIWAYAT RINGKAS -->
+          <div class="mt-8">
+            <h3 class="font-bold text-slate-800 mb-3 text-sm flex items-center gap-2">
+              <i class="fa-solid fa-clock-rotate-left text-indigo-600"></i> Transaksi Surat Terbaru
+            </h3>
+            <div class="overflow-x-auto border rounded-lg">
+              <table class="w-full text-sm text-left text-slate-600">
+                <thead class="text-xs text-slate-700 uppercase bg-slate-50 border-b">
+                  <tr>
+                    <th class="px-4 py-3">No. Surat</th>
+                    <th class="px-4 py-3">Nama Guru</th>
+                    <th class="px-4 py-3">Tempat Tujuan</th>
+                    <th class="px-4 py-3">Tgl Tugas</th>
+                    <th class="px-4 py-3 text-center">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="table-recent-surat">
+                  <!-- Injected via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW: FORM BUAT / EDIT SURAT -->
+        <div id="view-form-surat" class="hidden space-y-6">
+          <div class="border-b pb-4 flex justify-between items-center">
+            <div>
+              <h2 class="text-xl font-bold text-slate-800" id="form-surat-title">Buat Surat Tugas & SPPD</h2>
+              <p class="text-xs text-slate-500">Lengkapi formulir di bawah ini untuk menerbitkan dokumen 2 halaman</p>
+            </div>
+            <button onclick="switchView('arsip')" class="text-slate-600 hover:text-slate-800 text-sm font-medium">
+              <i class="fa-solid fa-arrow-left mr-1"></i> Kembali ke Arsip
+            </button>
+          </div>
+
+          <form onsubmit="handleSaveSurat(event)" class="space-y-6">
+            <input type="hidden" id="surat-id">
+
+            <!-- SEKSI 1: DATA GURU TUGAS -->
+            <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+              <h3 class="font-bold text-slate-700 text-sm mb-3 flex items-center gap-2">
+                <i class="fa-solid fa-user-gear text-indigo-600"></i> 1. Identitas Guru / Pegawai Ditugaskan
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Pilih Guru dari Database</label>
+                  <select id="surat-select-guru" onchange="autoFillGuruInfo()" class="w-full px-3 py-2 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500">
+                    <option value="">-- Ketik Manual / Pilih Guru --</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Lengkap & Gelar *</label>
+                  <input type="text" id="surat-nama-guru" required class="w-full px-3 py-2 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500" placeholder="Contoh: Suwanti, S.Pd">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">NIP (Isi '-' jika tidak ada)</label>
+                  <input type="text" id="surat-nip-guru" value="-" class="w-full px-3 py-2 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Pangkat / Golongan (Isi '-' jika tidak ada)</label>
+                  <input type="text" id="surat-pangkat-guru" value="-" class="w-full px-3 py-2 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Jabatan Guru *</label>
+                  <input type="text" id="surat-jabatan-guru" required class="w-full px-3 py-2 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500" placeholder="Contoh: Guru Produktif">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Unit Kerja Guru *</label>
+                  <input type="text" id="surat-unit-guru" required class="w-full px-3 py-2 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500" value="SMKS Budi Mulya">
+                </div>
+              </div>
+            </div>
+
+            <!-- SEKSI 2: DETAIL SURAT & SPPD -->
+            <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+              <h3 class="font-bold text-slate-700 text-sm mb-3 flex items-center gap-2">
+                <i class="fa-solid fa-file-contract text-indigo-600"></i> 2. Nomor Surat & Keperluan Dinas
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Nomor Surat Tugas *</label>
+                  <input type="text" id="surat-no-tugas" required class="w-full px-3 py-2 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500" placeholder="Format: 421.5/08..../SMKS-BMK/IX/2026">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Nomor SPPD *</label>
+                  <input type="text" id="surat-no-sppd" required class="w-full px-3 py-2 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500" placeholder="Format: 421.5/12..../SMKS-BMK/IX/2026">
+                </div>
+                <div class="md:col-span-2">
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Maksud / Keperluan Tugas *</label>
+                  <textarea id="surat-keperluan" required rows="2" class="w-full px-3 py-2 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500" placeholder="Contoh: Mengantar Berkas TKA"></textarea>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Tempat Berangkat</label>
+                  <input type="text" id="surat-tempat-berangkat" class="w-full px-3 py-2 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500" value="SMKS Budi Mulya">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Tempat Tujuan *</label>
+                  <input type="text" id="surat-tempat-tujuan" required class="w-full px-3 py-2 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500" placeholder="Contoh: Cabdin Bojonegoro">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Alat Angkut yang Digunakan</label>
+                  <input type="text" id="surat-alat-angkut" class="w-full px-3 py-2 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500" value="Kendaraan Umum">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Lamanya Perjalanan Dinas</label>
+                  <input type="text" id="surat-lama-perjalanan" class="w-full px-3 py-2 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500" value="1 Hari">
+                </div>
+              </div>
+            </div>
+
+            <!-- SEKSI 3: TANGGAL & PENETAPAN -->
+            <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+              <h3 class="font-bold text-slate-700 text-sm mb-3 flex items-center gap-2">
+                <i class="fa-solid fa-calendar-days text-indigo-600"></i> 3. Tanggal Perjalanan & Penandatanganan
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Tanggal Berangkat *</label>
+                  <input type="text" id="surat-tgl-berangkat" required class="w-full px-3 py-2 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500" placeholder="Contoh: 18 September 2026">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Tanggal Kembali *</label>
+                  <input type="text" id="surat-tgl-kembali" required class="w-full px-3 py-2 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500" placeholder="Contoh: 18 September 2026">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Tanggal Surat Diterbitkan *</label>
+                  <input type="text" id="surat-tgl-surat" required class="w-full px-3 py-2 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500" placeholder="Contoh: 18 September 2026">
+                </div>
+              </div>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-2">
+              <button type="button" onclick="switchView('arsip')" class="px-5 py-2 border rounded-lg text-sm text-slate-600 hover:bg-slate-100 font-medium">Batal</button>
+              <button type="submit" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-lg shadow flex items-center gap-2">
+                <i class="fa-solid fa-floppy-disk"></i> Simpan Data Surat
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- VIEW: ARSIP SURAT -->
+        <div id="view-arsip" class="hidden space-y-6">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b pb-4">
+            <div>
+              <h2 class="text-xl font-bold text-slate-800">Arsip Surat Tugas & SPPD</h2>
+              <p class="text-xs text-slate-500">Daftar seluruh dokumen yang telah dibuat dan siap dicetak</p>
+            </div>
+            <div class="flex gap-2 w-full sm:w-auto">
+              <input type="text" id="search-surat" oninput="filterSuratTable()" placeholder="Cari nama / no. surat..." class="px-3 py-1.5 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 w-full sm:w-64">
+              <button onclick="switchView('form-surat')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow whitespace-nowrap">
+                <i class="fa-solid fa-plus mr-1"></i> Buat Baru
+              </button>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto border rounded-xl shadow-sm">
+            <table class="w-full text-sm text-left text-slate-600">
+              <thead class="text-xs text-slate-700 uppercase bg-slate-100 border-b">
+                <tr>
+                  <th class="px-4 py-3">No.</th>
+                  <th class="px-4 py-3">No. Surat Tugas / SPPD</th>
+                  <th class="px-4 py-3">Guru Ditugaskan</th>
+                  <th class="px-4 py-3">Tujuan & Keperluan</th>
+                  <th class="px-4 py-3">Tgl Berangkat</th>
+                  <th class="px-4 py-3 text-center">Aksi Dokumen</th>
+                </tr>
+              </thead>
+              <tbody id="table-arsip-surat">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- VIEW: MASTER DATA GURU -->
+        <div id="view-master-guru" class="hidden space-y-6">
+          <div class="flex justify-between items-center border-b pb-4">
+            <div>
+              <h2 class="text-xl font-bold text-slate-800">Master Data Guru & Pegawai</h2>
+              <p class="text-xs text-slate-500">Kelola daftar guru untuk memudahkan pengisian form surat</p>
+            </div>
+            <button onclick="openModalGuru()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow flex items-center gap-1.5">
+              <i class="fa-solid fa-user-plus"></i> Tambah Guru
+            </button>
+          </div>
+
+          <div class="overflow-x-auto border rounded-xl shadow-sm">
+            <table class="w-full text-sm text-left text-slate-600">
+              <thead class="text-xs text-slate-700 uppercase bg-slate-100 border-b">
+                <tr>
+                  <th class="px-4 py-3">Nama Lengkap</th>
+                  <th class="px-4 py-3">NIP</th>
+                  <th class="px-4 py-3">Pangkat/Gol</th>
+                  <th class="px-4 py-3">Jabatan</th>
+                  <th class="px-4 py-3">Unit Kerja</th>
+                  <th class="px-4 py-3 text-center">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="table-master-guru">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- VIEW: MANAJEMEN PENGGUNA -->
+        <div id="view-users" class="hidden space-y-6">
+          <div class="flex justify-between items-center border-b pb-4">
+            <div><h2 class="text-xl font-bold text-slate-800">Manajemen Pengguna</h2><p class="text-xs text-slate-500">Kelola akun Admin dan Operator yang boleh menggunakan aplikasi.</p></div>
+            <button onclick="addUserPrompt()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow"><i class="fa-solid fa-user-plus mr-1"></i> Tambah Pengguna</button>
+          </div>
+          <div class="overflow-x-auto border rounded-xl shadow-sm">
+            <table class="w-full text-sm text-left text-slate-600"><thead class="text-xs text-slate-700 uppercase bg-slate-100 border-b"><tr><th class="px-4 py-3">Username</th><th class="px-4 py-3">Nama</th><th class="px-4 py-3">Role</th><th class="px-4 py-3">Status</th><th class="px-4 py-3 text-center">Aksi</th></tr></thead><tbody id="table-users"></tbody></table>
+          </div>
+        </div>
+
+        <!-- VIEW: PENGATURAN ADMIN -->
+        <div id="view-settings" class="hidden space-y-6">
+          <div class="border-b pb-4">
+            <h2 class="text-xl font-bold text-slate-800">Pengaturan Aplikasi & Kepsek</h2>
+            <p class="text-xs text-slate-500">Atur profil sekolah dan identitas Kepala Sekolah yang muncul di surat</p>
+          </div>
+
+          <form onsubmit="handleSaveSettings(event)" class="space-y-6 max-w-3xl">
+            <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-4">
+              <h3 class="font-bold text-indigo-900 text-sm border-b pb-2">Identitas Kepala Sekolah</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Kepala Sekolah *</label>
+                  <input type="text" id="set-nama-kepsek" required class="w-full px-3 py-2 border rounded-md text-sm">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">NIP Kepala Sekolah</label>
+                  <input type="text" id="set-nip-kepsek" class="w-full px-3 py-2 border rounded-md text-sm">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Pangkat / Golongan Kepsek</label>
+                  <input type="text" id="set-pangkat-kepsek" class="w-full px-3 py-2 border rounded-md text-sm">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Jabatan Kepsek *</label>
+                  <input type="text" id="set-jabatan-kepsek" required class="w-full px-3 py-2 border rounded-md text-sm">
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-4">
+              <h3 class="font-bold text-indigo-900 text-sm border-b pb-2">Identitas Sekolah & Kop Surat</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Instansi / Sekolah</label>
+                  <input type="text" id="set-nama-sekolah" required class="w-full px-3 py-2 border rounded-md text-sm">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Kecamatan / Kota (Penetapan Surat)</label>
+                  <input type="text" id="set-kota-sekolah" required class="w-full px-3 py-2 border rounded-md text-sm">
+                </div>
+                <div class="md:col-span-2">
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Alamat Lengkap Sekolah</label>
+                  <input type="text" id="set-alamat-sekolah" required class="w-full px-3 py-2 border rounded-md text-sm">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">No. Telepon Sekolah</label>
+                  <input type="text" id="set-telp-sekolah" class="w-full px-3 py-2 border rounded-md text-sm">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Email Sekolah</label>
+                  <input type="text" id="set-email-sekolah" class="w-full px-3 py-2 border rounded-md text-sm">
+                </div>
+                <div class="md:col-span-2">
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">URL Logo Sekolah</label>
+                  <input type="text" id="set-logo-url" required class="w-full px-3 py-2 border rounded-md text-sm">
+                </div>
+              </div>
+            </div>
+
+            <div class="flex justify-end">
+              <button type="submit" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-lg shadow flex items-center gap-2">
+                <i class="fa-solid fa-floppy-disk"></i> Simpan Pengaturan
+              </button>
+            </div>
+          </form>
+        </div>
+
+      </main>
+    </div>
+
+    <!-- MODAL LOGIN ADMIN -->
+    <div id="modal-admin-login" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+      <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 relative">
+        <button onclick="closeAdminLoginModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+
+        <div class="text-center mb-6">
+          <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-2 text-xl font-bold">
+            <i class="fa-solid fa-user-shield"></i>
+          </div>
+          <h3 class="text-lg font-bold text-slate-800">Login Administrator</h3>
+          <p class="text-xs text-slate-500 mt-1">Masuk untuk mengakses menu Pengaturan Kepsek & Sekolah</p>
+        </div>
+
+        <form onsubmit="handleAdminLogin(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Username</label>
+            <input type="text" id="login-admin-username" required class="w-full px-3.5 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500" placeholder="admin">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Password</label>
+            <input type="password" id="login-admin-password" required class="w-full px-3.5 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500" placeholder="••••••••">
+          </div>
+
+          <div class="p-2.5 bg-blue-50 border border-blue-200 rounded-lg text-[11px] text-blue-800">
+            <i class="fa-solid fa-circle-info mr-1"></i>
+            Gunakan akun Administrator yang tersimpan pada database Google Spreadsheet.
+          </div>
+
+          <button type="submit" id="btn-admin-login-submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg shadow transition flex justify-center items-center text-sm">
+            <span>Masuk Mode Admin</span>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL PRINT / PREVIEW DOKUMEN (2 HALAMAN) -->
+    <div id="modal-preview" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex flex-col justify-between overflow-y-auto p-2 sm:p-6">
+      
+      <!-- TOOLBAR MODAL PREVIEW -->
+      <div class="max-w-5xl w-full mx-auto bg-slate-800 text-white p-4 rounded-t-xl flex flex-col sm:flex-row justify-between items-center gap-4 sticky top-0 z-10 shadow-lg no-print">
+        <div class="flex items-center gap-3">
+          <i class="fa-solid fa-print text-indigo-400 text-xl"></i>
+          <div>
+            <h3 class="font-bold text-sm">Preview Cetak Surat Tugas & SPPD</h3>
+            <p class="text-xs text-slate-400">Pilih ukuran kertas sebelum mencetak</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <!-- SAKLAR UKURAN KERTAS A4 / F4 -->
+          <div class="flex items-center bg-slate-700 p-1 rounded-lg border border-slate-600">
+            <label class="text-xs font-medium px-2 text-slate-300">Ukuran Kertas:</label>
+            <button type="button" id="btn-paper-a4" onclick="setPaperSize('a4')" class="px-3 py-1 text-xs font-bold rounded-md bg-indigo-600 text-white transition">A4</button>
+            <button type="button" id="btn-paper-f4" onclick="setPaperSize('f4')" class="px-3 py-1 text-xs font-bold rounded-md text-slate-300 hover:text-white transition">F4 (Folio)</button>
+          </div>
+
+          <div class="flex gap-2">
+            <button onclick="executePrint()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-lg shadow flex items-center gap-2">
+              <i class="fa-solid fa-print"></i> Cetak Dokumen
+            </button>
+            <button onclick="closeModalPreview()" class="bg-slate-600 hover:bg-slate-700 text-white text-xs px-3 py-2 rounded-lg">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTAINER DOKUMEN CETAK 2 HALAMAN -->
+      <div class="max-w-5xl w-full mx-auto my-4 flex flex-col items-center gap-8 overflow-y-auto">
+        <div id="print-area" class="paper-a4 bg-white p-8 sm:p-12 shadow-2xl text-black surat-font text-slate-900 leading-normal">
+          
+          <!-- ================= HALAMAN 1: SURAT TUGAS ================= -->
+          <div id="page-1-surat-tugas" class="page-break flex flex-col justify-between min-h-[950px] pb-6">
+            <div>
+              <!-- KOP SURAT HALAMAN 1 -->
+              <div class="flex items-center justify-between border-kop pb-2 mb-6">
+                <div class="w-20 flex justify-center">
+                  <img id="print-logo-1" src="https://res.cloudinary.com/bwmgqxug/image/upload/v1789022731/logo95_-_Copy.png" class="w-20 h-auto" alt="Logo Sekolah">
+                </div>
+                <div class="text-center flex-1 px-2">
+                  <h2 class="font-bold text-base uppercase leading-tight tracking-wide" id="print-header-jenis">SEKOLAH MENENGAH KEJURUAN</h2>
+                  <h1 class="font-bold text-xl uppercase tracking-wider my-0.5" id="print-header-nama">SMKS BUDI MULYA</h1>
+                  <p class="text-xs leading-tight" id="print-header-alamat">Alamat : Jl. Wonosari, Sambeng-Kasiman, Bojonegoro Telp.(0296) 423345</p>
+                  <p class="text-xs leading-tight">e-mail: <span id="print-header-email">smkbudimulyakasiman@gmail.com</span></p>
+                  <p class="font-bold text-xs tracking-wider mt-0.5" id="print-header-kota">KASIMAN BOJONEGORO-62164</p>
+                </div>
+              </div>
+
+              <!-- JUDUL SURAT TUGAS -->
+              <div class="text-center my-6">
+                <h2 class="font-bold text-lg underline tracking-widest uppercase">SURAT TUGAS</h2>
+                <p class="text-sm font-bold mt-0.5" id="print-no-tugas">No: 421.5/08....../SMKS-BMK/IX/2026</p>
+              </div>
+
+              <p class="text-sm mb-3">Yang bertanda tangan dibawah ini :</p>
+
+              <!-- DATA PEJABAT (KEPSEK) -->
+              <table class="w-full text-sm mb-4 ml-6">
+                <tr>
+                  <td class="w-32 py-1">Nama</td>
+                  <td class="w-4 py-1">:</td>
+                  <td class="font-bold py-1" id="print-kepsek-nama">Heru Kasiyanto, S.Kom.</td>
+                </tr>
+                <tr>
+                  <td class="py-1">NIP</td>
+                  <td class="py-1">:</td>
+                  <td class="py-1" id="print-kepsek-nip">-</td>
+                </tr>
+                <tr>
+                  <td class="py-1">Pangkat/Gol</td>
+                  <td class="py-1">:</td>
+                  <td class="py-1" id="print-kepsek-pangkat">-</td>
+                </tr>
+                <tr>
+                  <td class="py-1">Jabatan</td>
+                  <td class="py-1">:</td>
+                  <td class="py-1" id="print-kepsek-jabatan">Kepala SMKS Budi Mulya</td>
+                </tr>
+                <tr>
+                  <td class="py-1">Unit Kerja</td>
+                  <td class="py-1">:</td>
+                  <td class="py-1" id="print-kepsek-unit">SMKS Budi Mulya</td>
+                </tr>
+              </table>
+
+              <p class="text-sm mb-3">Memberi tugas kepada :</p>
+
+              <!-- DATA GURU TUGAS -->
+              <table class="w-full text-sm mb-6 ml-6">
+                <tr>
+                  <td class="w-32 py-1">Nama</td>
+                  <td class="w-4 py-1">:</td>
+                  <td class="font-bold py-1" id="print-guru-nama">Suwanti, S.Pd</td>
+                </tr>
+                <tr>
+                  <td class="py-1">NIP</td>
+                  <td class="py-1">:</td>
+                  <td class="py-1" id="print-guru-nip">-</td>
+                </tr>
+                <tr>
+                  <td class="py-1">Pangkat/Gol.</td>
+                  <td class="py-1">:</td>
+                  <td class="py-1" id="print-guru-pangkat">-</td>
+                </tr>
+                <tr>
+                  <td class="py-1">Jabatan</td>
+                  <td class="py-1">:</td>
+                  <td class="py-1" id="print-guru-jabatan">Guru Produktif</td>
+                </tr>
+                <tr>
+                  <td class="py-1">Unit Kerja</td>
+                  <td class="py-1">:</td>
+                  <td class="py-1" id="print-guru-unit">SMKS Budi Mulya</td>
+                </tr>
+              </table>
+
+              <!-- DETAIL PERJALANAN -->
+              <table class="w-full text-sm mb-8 ml-6">
+                <tr>
+                  <td class="w-32 py-1.5">Berangkat</td>
+                  <td class="w-4 py-1.5">:</td>
+                  <td class="font-bold py-1.5" id="print-tgl-berangkat-1">18 September 2026</td>
+                </tr>
+                <tr>
+                  <td class="py-1.5">Tempat</td>
+                  <td class="py-1.5">:</td>
+                  <td class="font-bold py-1.5" id="print-tempat-tujuan-1">Cabdin Bojonegoro</td>
+                </tr>
+                <tr>
+                  <td class="py-1.5">Keperluan</td>
+                  <td class="py-1.5">:</td>
+                  <td class="font-bold py-1.5" id="print-keperluan-1">Mengantar Berkas TKA</td>
+                </tr>
+              </table>
+
+              <p class="text-sm leading-relaxed mb-12">
+                Demikian surat tugas ini dibuat untuk dapat dilaksanakan dengan sebaik-baiknya dan rasa penuh tanggung jawab.
+              </p>
+            </div>
+
+            <!-- TANDA TANGAN HALAMAN 1 -->
+            <div class="flex justify-end">
+              <div class="text-center w-64 text-sm">
+                <p id="print-ttd-kota-tgl">Kasiman, 18 September 2026</p>
+                <p class="mb-20">Kepala Sekolah</p>
+                <p class="font-bold underline" id="print-ttd-kepsek-nama-1">Heru Kasiyanto, S.Kom.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ================= HALAMAN 2: SPPD ================= -->
+          <div id="page-2-sppd" class="min-h-[950px] pt-4">
+            <!-- KOP SURAT HALAMAN 2 -->
+            <div class="flex items-center justify-between border-kop pb-2 mb-4">
+              <div class="w-16 flex justify-center">
+                <img id="print-logo-2" src="https://res.cloudinary.com/bwmgqxug/image/upload/v1789022731/logo95_-_Copy.png" class="w-16 h-auto" alt="Logo Sekolah">
+              </div>
+              <div class="text-center flex-1 px-2">
+                <h2 class="font-bold text-xs uppercase leading-tight" id="print-header-jenis-2">SEKOLAH MENENGAH KEJURUAN</h2>
+                <h1 class="font-bold text-base uppercase tracking-wider my-0.5" id="print-header-nama-2">SMKS BUDI MULYA</h1>
+                <p class="text-[10px] leading-tight" id="print-header-alamat-2">Alamat : Jl. Wonosari, Sambeng-Kasiman, Bojonegoro Telp.(0296) 423345</p>
+                <p class="text-[10px] leading-tight">e-mail: <span id="print-header-email-2">smkbudimulyakasiman@gmail.com</span></p>
+                <p class="font-bold text-[10px] tracking-wider" id="print-header-kota-2">KASIMAN BOJONEGORO-62164</p>
+              </div>
+            </div>
+
+            <!-- JUDUL SPPD -->
+            <div class="text-center my-3">
+              <h2 class="font-bold text-base underline uppercase">SURAT PERINTAH PERJALANAN DINAS (SPPD)</h2>
+              <p class="text-xs font-bold" id="print-no-sppd">Nomor: 421.5/12......./SMKS-BMK/IX/2026</p>
+            </div>
+
+            <!-- LAYOUT TABLE GRID SPPD 2 KOLOM SIMETRIS -->
+            <div class="grid grid-cols-12 border border-black text-xs">
+              
+              <!-- KOLOM KIRI (NO 1 - 9) -->
+              <div class="col-span-6 border-r border-black p-0">
+                <table class="w-full text-xs border-collapse">
+                  <tr class="border-b border-black">
+                    <td class="w-6 p-1 text-center align-top border-r border-black">1.</td>
+                    <td class="p-1 align-top w-2/5 border-r border-black">Pejabat yang berwenang memberikan perintah</td>
+                    <td class="p-1 align-top" id="print-sppd-pejabat">Kepala Sekolah</td>
+                  </tr>
+                  <tr class="border-b border-black">
+                    <td class="p-1 text-center align-top border-r border-black">2.</td>
+                    <td class="p-1 align-top border-r border-black">Nama yang diperintah</td>
+                    <td class="p-1 align-top font-bold" id="print-sppd-nama-guru">Suwanti, S.Pd</td>
+                  </tr>
+                  <tr class="border-b border-black">
+                    <td class="p-1 text-center align-top border-r border-black" rowspan="4">3.</td>
+                    <td class="p-1 align-top border-r border-black">a. Pangkat dan Gol Ruang</td>
+                    <td class="p-1 align-top" id="print-sppd-pangkat">: <span id="sppd-val-pangkat">-</span></td>
+                  </tr>
+                  <tr class="border-b border-black">
+                    <td class="p-1 align-top border-r border-black">b. Jabatan</td>
+                    <td class="p-1 align-top" id="print-sppd-jabatan">: <span id="sppd-val-jabatan">Guru Produktif</span></td>
+                  </tr>
+                  <tr class="border-b border-black">
+                    <td class="p-1 align-top border-r border-black">c. Gaji Pokok</td>
+                    <td class="p-1 align-top">: -</td>
+                  </tr>
+                  <tr class="border-b border-black">
+                    <td class="p-1 align-top border-r border-black">d. Tingkat Menurut Peraturan Perjalanan</td>
+                    <td class="p-1 align-top">: -</td>
+                  </tr>
+                  <tr class="border-b border-black">
+                    <td class="p-1 text-center align-top border-r border-black">4.</td>
+                    <td class="p-1 align-top border-r border-black">Maksud mengadakan Peraturan Perjalanan</td>
+                    <td class="p-1 align-top" id="print-sppd-keperluan">: Mengantar Berkas TKA</td>
+                  </tr>
+                  <tr class="border-b border-black">
+                    <td class="p-1 text-center align-top border-r border-black">5.</td>
+                    <td class="p-1 align-top border-r border-black">Alat angkut yang digunakan</td>
+                    <td class="p-1 align-top" id="print-sppd-alat">: Kendaraan Umum</td>
+                  </tr>
+                  <tr class="border-b border-black">
+                    <td class="p-1 text-center align-top border-r border-black" rowspan="2">6.</td>
+                    <td class="p-1 align-top border-r border-black">a. Tempat berangkat</td>
+                    <td class="p-1 align-top" id="print-sppd-berangkat-dari">: SMKS Budi Mulya kasiman</td>
+                  </tr>
+                  <tr class="border-b border-black">
+                    <td class="p-1 align-top border-r border-black">b. Tempat tujuan</td>
+                    <td class="p-1 align-top" id="print-sppd-tujuan">: Cabdin Bojonegoro</td>
+                  </tr>
+                  <tr class="border-b border-black">
+                    <td class="p-1 text-center align-top border-r border-black" rowspan="3">7.</td>
+                    <td class="p-1 align-top border-r border-black">a. Lamanya Perjalanan Dinas</td>
+                    <td class="p-1 align-top" id="print-sppd-lama">: 1 Hari</td>
+                  </tr>
+                  <tr class="border-b border-black">
+                    <td class="p-1 align-top border-r border-black">b. Tanggal berangkat</td>
+                    <td class="p-1 align-top" id="print-sppd-tgl-berangkat">: 18-Sep-26</td>
+                  </tr>
+                  <tr class="border-b border-black">
+                    <td class="p-1 align-top border-r border-black">c. Tanggal harus kembali</td>
+                    <td class="p-1 align-top" id="print-sppd-tgl-kembali">: 18-Sep-26</td>
+                  </tr>
+                  <tr class="border-b border-black">
+                    <td class="p-1 text-center align-top border-r border-black" rowspan="2">8.</td>
+                    <td class="p-1 align-top border-r border-black">Pembebanan Anggaran<br>a. Instansi</td>
+                    <td class="p-1 align-top"><br>: -</td>
+                  </tr>
+                  <tr class="border-b border-black">
+                    <td class="p-1 align-top border-r border-black">b. Mata Anggaran</td>
+                    <td class="p-1 align-top">: -</td>
+                  </tr>
+                  <tr>
+                    <td class="p-1 text-center align-top border-r border-black">9.</td>
+                    <td class="p-1 align-top border-r border-black">Keterangan Lain - lain</td>
+                    <td class="p-1 align-top">: -</td>
+                  </tr>
+                </table>
+
+                <div class="p-3 text-right">
+                  <table class="inline-block text-xs text-left">
+                    <tr>
+                      <td>Dikeluarkan di</td>
+                      <td class="px-1">:</td>
+                      <td id="print-sppd-keluar-di">Kasiman</td>
+                    </tr>
+                    <tr>
+                      <td>Pada Tanggal</td>
+                      <td class="px-1">:</td>
+                      <td id="print-sppd-keluar-tgl">18 September 2026</td>
+                    </tr>
+                  </table>
+                  <div class="text-center mt-2 w-48 ml-auto">
+                    <p id="print-sppd-ttd-jabatan">Kepala SMKS Budi Mulya</p>
+                    <div class="h-16"></div>
+                    <p class="font-bold underline" id="print-sppd-ttd-nama">Heru Kasiyanto, S.Kom</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- KOLOM KANAN (STEMPEL & LEMBAR BERANGKAT / TIBA) -->
+              <div class="col-span-6 p-2 text-[11px] space-y-3">
+                
+                <!-- LEMBAR I -->
+                <div class="border-b border-black pb-2">
+                  <div class="grid grid-cols-12">
+                    <span class="col-span-1 font-bold">I.</span>
+                    <div class="col-span-11">
+                      <p>Berangkat dari : <span id="print-sppd-i-dari">SMKS Budi Mulya</span></p>
+                      <p class="text-[10px] text-slate-600">(Tempat Kedudukan)</p>
+                      <p>Pada Tanggal : <span id="print-sppd-i-tgl">18 September 2026</span></p>
+                      <p>Menuju Ke : <span id="print-sppd-i-ke">Cabdin Bojonegoro</span></p>
+                      <div class="text-center mt-2">
+                        <p>Pejabat yang berwenang</p>
+                        <p id="print-sppd-i-jabatan">Kepala SMKS Budi Mulya</p>
+                        <div class="h-8"></div>
+                        <p class="font-bold underline" id="print-sppd-i-nama">Heru Kasiyanto, S.Kom</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- LEMBAR II -->
+                <div class="border-b border-black pb-2">
+                  <div class="grid grid-cols-12">
+                    <span class="col-span-1 font-bold">II.</span>
+                    <div class="col-span-11 grid grid-cols-2 gap-1">
+                      <div>
+                        <p>Tiba di : ....................</p>
+                        <p>Pada tanggal : ....................</p>
+                        <p>Kepala : ....................</p>
+                        <div class="h-6"></div>
+                        <p>NIP. </p>
+                      </div>
+                      <div>
+                        <p>Berangkat ke : ....................</p>
+                        <p>Pada tanggal : ....................</p>
+                        <p>Kepala : ....................</p>
+                        <div class="h-6"></div>
+                        <p>NIP. </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- LEMBAR III -->
+                <div class="border-b border-black pb-2">
+                  <div class="grid grid-cols-12">
+                    <span class="col-span-1 font-bold">III.</span>
+                    <div class="col-span-11 grid grid-cols-2 gap-1">
+                      <div>
+                        <p>Tiba di : ....................</p>
+                        <p>Pada tanggal : ....................</p>
+                        <p>Kepala : ....................</p>
+                        <div class="h-6"></div>
+                        <p>NIP. </p>
+                      </div>
+                      <div>
+                        <p>Berangkat ke : ....................</p>
+                        <p>Pada tanggal : ....................</p>
+                        <p>Kepala : ....................</p>
+                        <div class="h-6"></div>
+                        <p>NIP. </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- LEMBAR IV -->
+                <div class="border-b border-black pb-2">
+                  <div class="grid grid-cols-12">
+                    <span class="col-span-1 font-bold">IV.</span>
+                    <div class="col-span-11 grid grid-cols-2 gap-1">
+                      <div>
+                        <p>Tiba di : ....................</p>
+                        <p>Pada tanggal : ....................</p>
+                        <p>Kepala : ....................</p>
+                        <div class="h-6"></div>
+                        <p>NIP. </p>
+                      </div>
+                      <div>
+                        <p>Berangkat ke : ....................</p>
+                        <p>Pada tanggal : .................... </p>
+                        <p>Kepala : ....................</p>
+                        <div class="h-6"></div>
+                        <p>NIP. </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- LEMBAR V -->
+                <div class="border-b border-black pb-2">
+                  <div class="grid grid-cols-12">
+                    <span class="col-span-1 font-bold">V.</span>
+                    <div class="col-span-11">
+                      <p>Tiba Kembali di : <span id="print-sppd-v-kembali">SMKS Budi Mulya</span></p>
+                      <p class="text-[10px] text-slate-600">(Tempat Kedudukan)</p>
+                      <p>Pada tanggal : <span id="print-sppd-v-tgl">18 September 2026</span></p>
+                      <p>Pejabat yang berwenang</p>
+                      <p id="print-sppd-v-jabatan">Kepala SMKS Budi Mulya</p>
+                      <div class="h-6"></div>
+                      <p class="font-bold underline" id="print-sppd-v-nama">Heru Kasiyanto, S.Kom</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- FOOTNOTE SPPD LEGISLASI HUKUM -->
+                <div class="text-[9px] leading-tight text-justify">
+                  Telah diperiksa dengan keterangan bahwa perjalanan tersebut benar-benar dilakukan atas perintah dan semata-mata untuk kepentingan jabatan dan pejabat memberi perintah.
+                  <p class="mt-1">
+                    Pejabat yang berwenang menerbitkan SPPD pegawai yang melakukan Perjalanan Dinas, pejabat yang mengesahkan tanggal berangkat / tiba serta Bendahara bertanggung jawab berdasarkan peraturan keuangan negara, apabila Negara menderita kerugian akibat kesalahan dan kealpaannya (angka 8, Lampiran Surat Menteri Keuangan tanggal 30 April 1975 No. B.296/MK/II/74)
+                  </p>
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CONFIGURATION: URL backend disimpan terpisah agar mudah diganti di GitHub -->
+  <script src="config.js"></script>
+
+  <!-- JAVASCRIPT APP ENGINE -->
+  <script>
+    /* ==========================================================================
+       KONFIGURASI GITHUB PAGES + GOOGLE APPS SCRIPT
+       ========================================================================== */
+    const IS_PREVIEW = false;
+    const APP_CONFIG = window.ESURAT_CONFIG || {};
+    const GAS_URL = APP_CONFIG.GAS_URL || '';
+    let currentUser = null;
+    let selectedPaperSize = APP_CONFIG.DEFAULT_PAPER_SIZE || 'a4';
+
+    let settingsData = {
+      nama_kepsek: "Heru Kasiyanto, S.Kom.",
+      nip_kepsek: "-",
+      pangkat_kepsek: "-",
+      jabatan_kepsek: "Kepala SMKS Budi Mulya",
+      nama_sekolah: "SMKS BUDI MULYA",
+      jenis_instansi: "SEKOLAH MENENGAH KEJURUAN",
+      alamat_sekolah: "Jl. Wonosari, Sambeng-Kasiman, Bojonegoro",
+      email_sekolah: "smkbudimulyakasiman@gmail.com",
+      kota_sekolah: "Kasiman",
+      kode_pos: "62164",
+      telp_sekolah: "(0296) 423345",
+      logo_url: "https://res.cloudinary.com/bwmgqxug/image/upload/v1789022731/logo95_-_Copy.png"
+    };
+
+    let guruList = [];
+    let suratList = [];
+
+    /* ==========================================================================
+       INISIALISASI & SYSTEM CONTROL
+       ========================================================================== */
+    window.addEventListener('DOMContentLoaded', () => {
+      initApp();
+    });
+
+    function apiRequest(action, payload = {}, method = 'POST') {
+      if (!GAS_URL || GAS_URL.includes('PASTE_URL_')) {
+        return Promise.reject(new Error('URL Web App Apps Script belum diisi pada GAS_URL.'));
+      }
+
+      const url = method === 'GET'
+        ? `${GAS_URL}?action=${encodeURIComponent(action)}`
+        : GAS_URL;
+
+      const options = {
+        method: method,
+        cache: 'no-store',
+        headers: method === 'POST' ? { 'Content-Type': 'text/plain;charset=utf-8' } : undefined
+      };
+
+      if (method === 'POST') {
+        const session = currentUser && currentUser.token ? { token: currentUser.token } : {};
+        options.body = JSON.stringify({ action, ...payload, ...session });
+      }
+
+      return fetch(url, options).then(async response => {
+        const text = await response.text();
+        let data;
+        try { data = JSON.parse(text); }
+        catch (_) { throw new Error('Backend tidak mengembalikan JSON yang valid. Pastikan URL Web App Apps Script benar dan akses deployment = Anyone.'); }
+        if (!response.ok) throw new Error(data.message || `HTTP ${response.status}`);
+        return data;
+      });
+    }
+
+    function showApiError(error, fallback='Terjadi kesalahan koneksi ke backend.') {
+      console.error(error);
+      alert(`${fallback}\n\n${error.message || error}`);
+    }
+
+    function initApp() {
+      const savedUser = sessionStorage.getItem('esurat_user');
+      if (savedUser) {
+        try {
+          const parsed = JSON.parse(savedUser);
+          currentUser = parsed && parsed.token ? parsed : null;
+        } catch (_) { currentUser = null; }
+      }
+
+      setPaperSize(selectedPaperSize);
+      renderUserInterface();
+      if (currentUser) {
+        loadAllData();
+        switchView('dashboard');
+      } else {
+        showLoginRequired();
+      }
+    }
+
+    /* ==========================================================================
+       AUTENTIKASI ADMIN / OPERATOR
+       ========================================================================== */
+    function openAdminLoginModal() {
+      document.getElementById('modal-admin-login').classList.remove('hidden');
+      const title = document.querySelector('#modal-admin-login h3');
+      if (title) title.textContent = 'Login E-Surat & SPPD';
+      const desc = document.querySelector('#modal-admin-login p');
+      if (desc) desc.textContent = 'Login diperlukan untuk mengakses aplikasi.';
+      const submit = document.getElementById('btn-admin-login-submit');
+      if (submit) submit.innerHTML = '<span>Masuk Aplikasi</span>';
+    }
+
+    function closeAdminLoginModal() {
+      document.getElementById('modal-admin-login').classList.add('hidden');
+    }
+
+    function showLoginRequired() {
+      renderUserInterface();
+      const views = ['dashboard','form-surat','arsip','master-guru','users','settings'];
+      views.forEach(v => { const el=document.getElementById('view-'+v); if(el) el.classList.add('hidden'); });
+      document.getElementById('view-dashboard').classList.remove('hidden');
+      document.getElementById('view-dashboard').innerHTML = `
+        <div class="min-h-[420px] flex items-center justify-center">
+          <div class="text-center max-w-md">
+            <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-2xl"><i class="fa-solid fa-lock"></i></div>
+            <h2 class="text-xl font-bold text-slate-800">Login diperlukan</h2>
+            <p class="text-sm text-slate-500 mt-2 mb-5">Aplikasi E-Surat & SPPD hanya dapat digunakan oleh Admin atau Operator yang terdaftar.</p>
+            <button onclick="openAdminLoginModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg font-semibold text-sm"><i class="fa-solid fa-right-to-bracket mr-2"></i>Login Sekarang</button>
+          </div>
+        </div>`;
+    }
+
+    function handleAdminLogin(e) {
+      e.preventDefault();
+      const u = document.getElementById('login-admin-username').value.trim();
+      const p = document.getElementById('login-admin-password').value;
+      const btn = document.getElementById('btn-admin-login-submit');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Verifikasi...';
+
+      apiRequest('login', { username: u, password: p })
+        .then(res => {
+          if (res.status !== 'success' || !res.user || !res.user.token) throw new Error(res.message || 'Login gagal.');
+          currentUser = res.user;
+          sessionStorage.setItem('esurat_user', JSON.stringify(currentUser));
+          closeAdminLoginModal();
+          renderUserInterface();
+          loadAllData();
+          switchView('dashboard');
+        })
+        .catch(err => showApiError(err, 'Login gagal.'))
+        .finally(() => { btn.disabled=false; btn.innerHTML='<span>Masuk Aplikasi</span>'; });
+    }
+
+    function logoutAdmin() {
+      if (currentUser && currentUser.token) apiRequest('logout').catch(()=>{});
+      sessionStorage.removeItem('esurat_user');
+      currentUser = null;
+      renderUserInterface();
+      showLoginRequired();
+    }
+
+    function renderUserInterface() {
+      const authNav = document.getElementById('nav-auth-container');
+      const menu = document.getElementById('menu-container');
+      if (!currentUser) {
+        authNav.innerHTML = `<button onclick="openAdminLoginModal()" class="bg-indigo-800 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded transition flex items-center gap-1.5"><i class="fa-solid fa-right-to-bracket"></i> Login</button>`;
+        menu.innerHTML = `<div class="p-3 text-xs text-slate-500 bg-slate-50 rounded-lg"><i class="fa-solid fa-lock mr-1"></i> Login untuk membuka menu aplikasi.</div>`;
+        return;
+      }
+
+      const roleIcon = currentUser.role === 'Admin' ? 'fa-user-shield' : 'fa-user-gear';
+      authNav.innerHTML = `<span class="bg-indigo-800 text-indigo-100 text-xs px-2.5 py-1 rounded-md font-semibold border border-indigo-700"><i class="fa-solid ${roleIcon} text-amber-400 mr-1"></i>${currentUser.nama || currentUser.username} · ${currentUser.role}</span><button onclick="logoutAdmin()" class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-3 py-1.5 rounded transition shadow"><i class="fa-solid fa-right-from-bracket mr-1"></i> Keluar</button>`;
+
+      let html = `
+        <button onclick="switchView('dashboard')" id="nav-dashboard" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition"><i class="fa-solid fa-chart-line w-5 text-center"></i> Dashboard</button>
+        <button onclick="switchView('form-surat')" id="nav-form-surat" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition"><i class="fa-solid fa-pen-to-square w-5 text-center"></i> Buat Surat Tugas</button>
+        <button onclick="switchView('arsip')" id="nav-arsip" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition"><i class="fa-solid fa-box-archive w-5 text-center"></i> Arsip Surat</button>
+        <button onclick="switchView('master-guru')" id="nav-master-guru" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition"><i class="fa-solid fa-users w-5 text-center"></i> Master Data Guru</button>`;
+      if (currentUser.role === 'Admin') html += `<div class="pt-3 my-2 border-t text-[11px] font-bold text-slate-400 uppercase tracking-wider">Khusus Admin</div><button onclick="switchView('users')" id="nav-users" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition"><i class="fa-solid fa-user-shield w-5 text-center"></i> Pengguna</button><button onclick="switchView('settings')" id="nav-settings" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition"><i class="fa-solid fa-sliders w-5 text-center"></i> Pengaturan Kepsek</button>`;
+      menu.innerHTML = html;
+      if (currentUser.role === 'Admin') loadUsers();
+    }
+
+    /* ==========================================================================
+       VIEW ROUTING & DATA LOAD
+       ========================================================================== */
+    function switchView(viewName) {
+      if (!currentUser) { openAdminLoginModal(); return; }
+      if ((viewName === 'settings' || viewName === 'users') && currentUser.role !== 'Admin') {
+        openAdminLoginModal();
+        return;
+      }
+
+      const views = ['dashboard', 'form-surat', 'arsip', 'master-guru', 'users', 'settings'];
+      views.forEach(v => {
+        const el = document.getElementById(`view-${v}`);
+        if (el) el.classList.add('hidden');
+        
+        const navEl = document.getElementById(`nav-${v}`);
+        if (navEl) navEl.classList.remove('bg-indigo-50', 'text-indigo-600', 'font-bold');
+      });
+
+      const activeView = document.getElementById(`view-${viewName}`);
+      if (activeView) activeView.classList.remove('hidden');
+
+      const activeNav = document.getElementById(`nav-${viewName}`);
+      if (activeNav) activeNav.classList.add('bg-indigo-50', 'text-indigo-600', 'font-bold');
+
+      if (viewName === 'users') loadUsers();
+      if (viewName === 'form-surat' && !document.getElementById('surat-id').value) {
+        resetFormSurat();
+      }
+    }
+
+    function loadAllData() {
+      if (!IS_PREVIEW) {
+        apiRequest('getAllData')
+          .then(res => {
+            if (res.status === 'success') {
+              settingsData = { ...settingsData, ...res.settings };
+              guruList = Array.isArray(res.guru) ? res.guru : [];
+              suratList = Array.isArray(res.surat) ? res.surat : [];
+              renderAllViews();
+            } else {
+              throw new Error(res.message || 'Data tidak dapat dimuat.');
+            }
+          })
+          .catch(err => showApiError(err, 'Data aplikasi gagal dimuat.'));
+      } else {
+        renderAllViews();
+      }
+    }
+
+    function renderAllViews() {
+      // Update Dashboard Stats
+      document.getElementById('stat-total-surat').textContent = suratList.length;
+      document.getElementById('stat-total-guru').textContent = guruList.length;
+      document.getElementById('stat-nama-kepsek').textContent = settingsData.nama_kepsek;
+      document.getElementById('stat-nip-kepsek').textContent = "NIP: " + settingsData.nip_kepsek;
+      document.getElementById('school-name-nav').textContent = settingsData.nama_sekolah;
+
+      // Render Recent Surat Table
+      const recentTbody = document.getElementById('table-recent-surat');
+      recentTbody.innerHTML = suratList.slice(0, 5).map(s => `
+        <tr class="border-b hover:bg-slate-50">
+          <td class="px-4 py-2.5 font-medium text-slate-800">${s.no_tugas}</td>
+          <td class="px-4 py-2.5">${s.nama_guru}</td>
+          <td class="px-4 py-2.5">${s.tempat_tujuan}</td>
+          <td class="px-4 py-2.5 text-xs text-slate-500">${s.tgl_berangkat}</td>
+          <td class="px-4 py-2.5 text-center">
+            <button onclick="previewSurat('${s.id}')" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 text-xs px-2.5 py-1 rounded">
+              <i class="fa-solid fa-print mr-1"></i> Cetak
+            </button>
+          </td>
+        </tr>
+      `).join('');
+
+      // Populate Select Guru Dropdown
+      const selectGuru = document.getElementById('surat-select-guru');
+      selectGuru.innerHTML = `<option value="">-- Ketik Manual / Pilih Guru --</option>` +
+        guruList.map(g => `<option value="${g.id}">${g.nama} (${g.jabatan})</option>`).join('');
+
+      // Render Arsip Table
+      renderArsipTable(suratList);
+
+      // Render Master Guru Table
+      renderMasterGuruTable();
+
+      // Load Settings Form Data
+      document.getElementById('set-nama-kepsek').value = settingsData.nama_kepsek;
+      document.getElementById('set-nip-kepsek').value = settingsData.nip_kepsek;
+      document.getElementById('set-pangkat-kepsek').value = settingsData.pangkat_kepsek;
+      document.getElementById('set-jabatan-kepsek').value = settingsData.jabatan_kepsek;
+      document.getElementById('set-nama-sekolah').value = settingsData.nama_sekolah;
+      document.getElementById('set-kota-sekolah').value = settingsData.kota_sekolah;
+      document.getElementById('set-alamat-sekolah').value = settingsData.alamat_sekolah;
+      document.getElementById('set-telp-sekolah').value = settingsData.telp_sekolah;
+      document.getElementById('set-email-sekolah').value = settingsData.email_sekolah;
+      document.getElementById('set-logo-url').value = settingsData.logo_url;
+    }
+
+    /* ==========================================================================
+       FORM SURAT & AUTOFILL LOGIC
+       ========================================================================== */
+    function autoFillGuruInfo() {
+      const guruId = document.getElementById('surat-select-guru').value;
+      if (!guruId) return;
+
+      const g = guruList.find(item => item.id === guruId);
+      if (g) {
+        document.getElementById('surat-nama-guru').value = g.nama;
+        document.getElementById('surat-nip-guru').value = g.nip;
+        document.getElementById('surat-pangkat-guru').value = g.pangkat;
+        document.getElementById('surat-jabatan-guru').value = g.jabatan;
+        document.getElementById('surat-unit-guru').value = g.unit;
+      }
+    }
+
+    function resetFormSurat() {
+      document.getElementById('surat-id').value = '';
+      document.getElementById('form-surat-title').textContent = 'Buat Surat Tugas & SPPD';
+      document.getElementById('surat-select-guru').value = '';
+      document.getElementById('surat-nama-guru').value = '';
+      document.getElementById('surat-nip-guru').value = '-';
+      document.getElementById('surat-pangkat-guru').value = '-';
+      document.getElementById('surat-jabatan-guru').value = 'Guru Produktif';
+      document.getElementById('surat-unit-guru').value = settingsData.nama_sekolah;
+
+      const year = new Date().getFullYear();
+      document.getElementById('surat-no-tugas').value = `421.5/08.0${suratList.length + 1}/SMKS-BMK/IX/${year}`;
+      document.getElementById('surat-no-sppd').value = `421.5/12.0${suratList.length + 1}/SMKS-BMK/IX/${year}`;
+      document.getElementById('surat-keperluan').value = '';
+      document.getElementById('surat-tempat-berangkat').value = settingsData.nama_sekolah;
+      document.getElementById('surat-tempat-tujuan').value = '';
+      document.getElementById('surat-alat-angkut').value = 'Kendaraan Umum';
+      document.getElementById('surat-lama-perjalanan').value = '1 Hari';
+
+      const nowStr = "18 September 2026";
+      document.getElementById('surat-tgl-berangkat').value = nowStr;
+      document.getElementById('surat-tgl-kembali').value = nowStr;
+      document.getElementById('surat-tgl-surat').value = nowStr;
+    }
+
+    function handleSaveSurat(e) {
+      e.preventDefault();
+      if (!currentUser.token) {
+        openAdminLoginModal();
+        alert('Silakan login Administrator terlebih dahulu untuk menyimpan surat.');
+        return;
+      }
+
+      const id = document.getElementById('surat-id').value || 'SRT-' + Date.now();
+      const payload = {
+        id: id,
+        no_tugas: document.getElementById('surat-no-tugas').value,
+        no_sppd: document.getElementById('surat-no-sppd').value,
+        nama_guru: document.getElementById('surat-nama-guru').value,
+        nip_guru: document.getElementById('surat-nip-guru').value,
+        pangkat_guru: document.getElementById('surat-pangkat-guru').value,
+        jabatan_guru: document.getElementById('surat-jabatan-guru').value,
+        unit_guru: document.getElementById('surat-unit-guru').value,
+        tempat_berangkat: document.getElementById('surat-tempat-berangkat').value,
+        tempat_tujuan: document.getElementById('surat-tempat-tujuan').value,
+        keperluan: document.getElementById('surat-keperluan').value,
+        alat_angkut: document.getElementById('surat-alat-angkut').value,
+        lama_perjalanan: document.getElementById('surat-lama-perjalanan').value,
+        tgl_berangkat: document.getElementById('surat-tgl-berangkat').value,
+        tgl_kembali: document.getElementById('surat-tgl-kembali').value,
+        tgl_surat: document.getElementById('surat-tgl-surat').value
+      };
+
+      if (IS_PREVIEW) {
+        const idx = suratList.findIndex(s => s.id === id);
+        if (idx >= 0) suratList[idx] = payload;
+        else suratList.unshift(payload);
+        
+        alert('Data Surat Berhasil Disimpan!');
+        renderAllViews();
+        previewSurat(id);
+      } else {
+        apiRequest('saveSurat', { data: payload })
+        .then(res => {
+          if (res.status === 'success') {
+            const existingIndex = suratList.findIndex(item => item.id === id);
+            if (existingIndex >= 0) suratList[existingIndex] = payload;
+            else suratList.unshift(payload);
+            renderAllViews();
+            alert('Data Surat Berhasil Disimpan!');
+            previewSurat(id);
+          } else {
+            throw new Error(res.message || 'Gagal menyimpan surat.');
+          }
+        })
+        .catch(err => showApiError(err, 'Gagal menyimpan surat.'));
+      }
+    }
+
+    /* ==========================================================================
+       ARSIP SURAT MANAGEMENT & TABLE
+       ========================================================================== */
+    function renderArsipTable(data) {
+      const tbody = document.getElementById('table-arsip-surat');
+      if (data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-400">Belum ada arsip surat.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = data.map((s, idx) => `
+        <tr class="border-b hover:bg-slate-50">
+          <td class="px-4 py-3 font-semibold text-slate-500">${idx + 1}</td>
+          <td class="px-4 py-3">
+            <p class="font-bold text-slate-800">${s.no_tugas}</p>
+            <p class="text-xs text-slate-500">SPPD: ${s.no_sppd}</p>
+          </td>
+          <td class="px-4 py-3 font-medium text-slate-700">${s.nama_guru}</td>
+          <td class="px-4 py-3">
+            <p class="font-semibold text-slate-800">${s.tempat_tujuan}</p>
+            <p class="text-xs text-slate-500">${s.keperluan}</p>
+          </td>
+          <td class="px-4 py-3 text-xs text-slate-600">${s.tgl_berangkat}</td>
+          <td class="px-4 py-3 text-center">
+            <div class="flex justify-center gap-1.5">
+              <button onclick="previewSurat('${s.id}')" title="Cetak Dokumen" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-2.5 py-1.5 rounded shadow">
+                <i class="fa-solid fa-print"></i> Cetak
+              </button>
+              <button onclick="editSurat('${s.id}')" title="Edit Data" class="bg-amber-500 hover:bg-amber-600 text-white text-xs px-2.5 py-1.5 rounded shadow">
+                <i class="fa-solid fa-pen"></i>
+              </button>
+              <button onclick="deleteSurat('${s.id}')" title="Hapus Surat" class="bg-red-600 hover:bg-red-700 text-white text-xs px-2.5 py-1.5 rounded shadow">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function filterSuratTable() {
+      const q = document.getElementById('search-surat').value.toLowerCase();
+      const filtered = suratList.filter(s => 
+        s.nama_guru.toLowerCase().includes(q) ||
+        s.no_tugas.toLowerCase().includes(q) ||
+        s.tempat_tujuan.toLowerCase().includes(q)
+      );
+      renderArsipTable(filtered);
+    }
+
+    function editSurat(id) {
+      const s = suratList.find(item => item.id === id);
+      if (!s) return;
+
+      document.getElementById('surat-id').value = s.id;
+      document.getElementById('form-surat-title').textContent = 'Edit Surat Tugas & SPPD';
+      document.getElementById('surat-nama-guru').value = s.nama_guru;
+      document.getElementById('surat-nip-guru').value = s.nip_guru;
+      document.getElementById('surat-pangkat-guru').value = s.pangkat_guru;
+      document.getElementById('surat-jabatan-guru').value = s.jabatan_guru;
+      document.getElementById('surat-unit-guru').value = s.unit_guru;
+      document.getElementById('surat-no-tugas').value = s.no_tugas;
+      document.getElementById('surat-no-sppd').value = s.no_sppd;
+      document.getElementById('surat-keperluan').value = s.keperluan;
+      document.getElementById('surat-tempat-berangkat').value = s.tempat_berangkat;
+      document.getElementById('surat-tempat-tujuan').value = s.tempat_tujuan;
+      document.getElementById('surat-alat-angkut').value = s.alat_angkut;
+      document.getElementById('surat-lama-perjalanan').value = s.lama_perjalanan;
+      document.getElementById('surat-tgl-berangkat').value = s.tgl_berangkat;
+      document.getElementById('surat-tgl-kembali').value = s.tgl_kembali;
+      document.getElementById('surat-tgl-surat').value = s.tgl_surat;
+
+      switchView('form-surat');
+    }
+
+    function deleteSurat(id) {
+      if (!currentUser.token) {
+        openAdminLoginModal();
+        return;
+      }
+      if (!confirm('Apakah Anda yakin ingin menghapus arsip surat ini?')) return;
+
+      if (IS_PREVIEW) {
+        suratList = suratList.filter(s => s.id !== id);
+        renderAllViews();
+      } else {
+        apiRequest('deleteSurat', { id })
+        .then(res => {
+          if (res.status === 'success') loadAllData();
+          else throw new Error(res.message || 'Gagal menghapus surat.');
+        })
+        .catch(err => showApiError(err, 'Gagal menghapus surat.'));
+      }
+    }
+
+    /* ==========================================================================
+       MASTER GURU MANAGEMENT
+       ========================================================================== */
+    function renderMasterGuruTable() {
+      const tbody = document.getElementById('table-master-guru');
+      tbody.innerHTML = guruList.map(g => `
+        <tr class="border-b hover:bg-slate-50">
+          <td class="px-4 py-3 font-bold text-slate-800">${g.nama}</td>
+          <td class="px-4 py-3">${g.nip}</td>
+          <td class="px-4 py-3">${g.pangkat}</td>
+          <td class="px-4 py-3">${g.jabatan}</td>
+          <td class="px-4 py-3 text-xs">${g.unit}</td>
+          <td class="px-4 py-3 text-center">
+            <button onclick="deleteGuru('${g.id}')" class="text-red-600 hover:text-red-800 text-xs font-semibold">
+              <i class="fa-solid fa-trash mr-1"></i> Hapus
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function openModalGuru() {
+      if (!currentUser.token) {
+        openAdminLoginModal();
+        return;
+      }
+      const nama = prompt('Masukkan Nama Lengkap Guru & Gelar:');
+      if (!nama) return;
+      const nip = prompt('Masukkan NIP Guru (Isi - jika tidak ada):', '-');
+      const pangkat = prompt('Masukkan Pangkat / Golongan (Isi - jika tidak ada):', '-');
+      const jabatan = prompt('Masukkan Jabatan Guru:', 'Guru Produktif');
+
+      const newGuru = {
+        id: 'G' + Date.now(),
+        nama: nama,
+        nip: nip || '-',
+        pangkat: pangkat || '-',
+        jabatan: jabatan || 'Guru',
+        unit: settingsData.nama_sekolah
+      };
+
+      if (IS_PREVIEW) {
+        guruList.push(newGuru);
+        renderAllViews();
+      } else {
+        apiRequest('saveGuru', { data: newGuru })
+        .then(res => {
+          if (res.status === 'success') loadAllData();
+          else throw new Error(res.message || 'Gagal menyimpan guru.');
+        })
+        .catch(err => showApiError(err, 'Gagal menyimpan guru.'));
+      }
+    }
+
+    function deleteGuru(id) {
+      if (!currentUser.token) {
+        openAdminLoginModal();
+        return;
+      }
+      if (!confirm('Hapus guru dari database?')) return;
+      if (IS_PREVIEW) {
+        guruList = guruList.filter(g => g.id !== id);
+        renderAllViews();
+      } else {
+        apiRequest('deleteGuru', { id }).then(() => loadAllData()).catch(err => showApiError(err, 'Gagal menghapus guru.'));
+      }
+    }
+
+    /* ==========================================================================
+       USER MANAGEMENT (KHUSUS ADMIN)
+       ========================================================================== */
+    function loadUsers(){
+      if(!currentUser || currentUser.role!=='Admin') return;
+      apiRequest('getUsers').then(res=>{
+        if(res.status!=='success') throw new Error(res.message||'Gagal memuat pengguna.');
+        const tbody=document.getElementById('table-users');
+        tbody.innerHTML=(res.users||[]).map(u=>`<tr class="border-b hover:bg-slate-50"><td class="px-4 py-3 font-semibold">${u.username}</td><td class="px-4 py-3">${u.nama}</td><td class="px-4 py-3"><span class="px-2 py-1 rounded text-xs ${u.role==='Admin'?'bg-indigo-100 text-indigo-700':'bg-emerald-100 text-emerald-700'}">${u.role}</span></td><td class="px-4 py-3">${u.status}</td><td class="px-4 py-3 text-center"><button onclick="deleteUserPrompt('${u.id}','${u.username}')" class="text-red-600 text-xs font-semibold"><i class="fa-solid fa-trash mr-1"></i>Hapus</button></td></tr>`).join('') || '<tr><td colspan="5" class="text-center py-6 text-slate-400">Belum ada pengguna.</td></tr>';
+      }).catch(err=>showApiError(err,'Gagal memuat pengguna.'));
+    }
+    function addUserPrompt(){
+      if(!currentUser || currentUser.role!=='Admin') return openAdminLoginModal();
+      const username=prompt('Username pengguna baru:'); if(!username) return;
+      const password=prompt('Password pengguna baru:'); if(!password) return;
+      const nama=prompt('Nama pengguna:','Operator Surat'); if(!nama) return;
+      const role=(prompt('Role (Admin / Operator):','Operator')||'Operator').trim()==='Admin'?'Admin':'Operator';
+      apiRequest('saveUser',{data:{username,password,nama,role,status:'Aktif'}}).then(res=>{if(res.status!=='success') throw new Error(res.message); loadUsers();}).catch(err=>showApiError(err,'Gagal menambah pengguna.'));
+    }
+    function deleteUserPrompt(id,username){
+      if(username==='admin'){alert('Akun admin utama tidak dapat dihapus.');return;}
+      if(!confirm('Hapus pengguna '+username+'?')) return;
+      apiRequest('deleteUser',{id}).then(res=>{if(res.status!=='success') throw new Error(res.message); loadUsers();}).catch(err=>showApiError(err,'Gagal menghapus pengguna.'));
+    }
+
+    /* ==========================================================================
+       SETTINGS MANAGEMENT (KHUSUS ADMIN)
+       ========================================================================== */
+    function handleSaveSettings(e) {
+      e.preventDefault();
+      if (!currentUser.token || currentUser.role !== 'Admin') {
+        openAdminLoginModal();
+        return;
+      }
+      if (currentUser.role !== 'Admin') {
+        alert('Akses Ditolak! Hanya Admin yang dapat mengubah pengaturan.');
+        return;
+      }
+
+      settingsData.nama_kepsek = document.getElementById('set-nama-kepsek').value;
+      settingsData.nip_kepsek = document.getElementById('set-nip-kepsek').value;
+      settingsData.pangkat_kepsek = document.getElementById('set-pangkat-kepsek').value;
+      settingsData.jabatan_kepsek = document.getElementById('set-jabatan-kepsek').value;
+      settingsData.nama_sekolah = document.getElementById('set-nama-sekolah').value;
+      settingsData.kota_sekolah = document.getElementById('set-kota-sekolah').value;
+      settingsData.alamat_sekolah = document.getElementById('set-alamat-sekolah').value;
+      settingsData.telp_sekolah = document.getElementById('set-telp-sekolah').value;
+      settingsData.email_sekolah = document.getElementById('set-email-sekolah').value;
+      settingsData.logo_url = document.getElementById('set-logo-url').value;
+
+      if (IS_PREVIEW) {
+        alert('Pengaturan Berhasil Disimpan (Mode Preview)!');
+        renderAllViews();
+      } else {
+        apiRequest('saveSettings', { data: settingsData })
+        .then(res => {
+          if (res.status === 'success') {
+            alert('Pengaturan Berhasil Disimpan ke Database!');
+            loadAllData();
+          } else {
+            throw new Error(res.message || 'Gagal menyimpan pengaturan.');
+          }
+        })
+        .catch(err => showApiError(err, 'Gagal menyimpan pengaturan.'));
+      }
+    }
+
+    /* ==========================================================================
+       MODAL PREVIEW & DYNAMIC PAPER PRINT ENGINE (A4 / F4)
+       ========================================================================== */
+    function setPaperSize(size) {
+      selectedPaperSize = size;
+      const btnA4 = document.getElementById('btn-paper-a4');
+      const btnF4 = document.getElementById('btn-paper-f4');
+      const paperContainer = document.getElementById('print-area');
+      const dynamicStyle = document.getElementById('dynamic-paper-print');
+
+      if (size === 'a4') {
+        btnA4.className = "px-3 py-1 text-xs font-bold rounded-md bg-indigo-600 text-white transition";
+        btnF4.className = "px-3 py-1 text-xs font-bold rounded-md text-slate-300 hover:text-white transition";
+        paperContainer.className = "paper-a4 bg-white p-8 sm:p-12 shadow-2xl text-black surat-font text-slate-900 leading-normal";
+        dynamicStyle.innerHTML = `@page { size: 210mm 297mm; margin: 10mm 15mm; }`;
+      } else {
+        btnF4.className = "px-3 py-1 text-xs font-bold rounded-md bg-indigo-600 text-white transition";
+        btnA4.className = "px-3 py-1 text-xs font-bold rounded-md text-slate-300 hover:text-white transition";
+        paperContainer.className = "paper-f4 bg-white p-8 sm:p-12 shadow-2xl text-black surat-font text-slate-900 leading-normal";
+        dynamicStyle.innerHTML = `@page { size: 215mm 330mm; margin: 10mm 15mm; }`;
+      }
+    }
+
+    function previewSurat(id) {
+      const s = suratList.find(item => item.id === id);
+      if (!s) return;
+
+      // Populate Header & Logo
+      document.getElementById('print-logo-1').src = settingsData.logo_url;
+      document.getElementById('print-logo-2').src = settingsData.logo_url;
+      document.getElementById('print-header-nama').textContent = settingsData.nama_sekolah;
+      document.getElementById('print-header-nama-2').textContent = settingsData.nama_sekolah;
+      document.getElementById('print-header-alamat').textContent = settingsData.alamat_sekolah;
+      document.getElementById('print-header-alamat-2').textContent = settingsData.alamat_sekolah;
+      document.getElementById('print-header-email').textContent = settingsData.email_sekolah;
+      document.getElementById('print-header-email-2').textContent = settingsData.email_sekolah;
+      document.getElementById('print-header-kota').textContent = settingsData.kota_sekolah.toUpperCase();
+      document.getElementById('print-header-kota-2').textContent = settingsData.kota_sekolah.toUpperCase();
+
+      // Populate Page 1 (Surat Tugas)
+      document.getElementById('print-no-tugas').textContent = `No: ${s.no_tugas}`;
+      document.getElementById('print-kepsek-nama').textContent = settingsData.nama_kepsek;
+      document.getElementById('print-kepsek-nip').textContent = settingsData.nip_kepsek;
+      document.getElementById('print-kepsek-pangkat').textContent = settingsData.pangkat_kepsek;
+      document.getElementById('print-kepsek-jabatan').textContent = settingsData.jabatan_kepsek;
+      document.getElementById('print-kepsek-unit').textContent = settingsData.nama_sekolah;
+
+      document.getElementById('print-guru-nama').textContent = s.nama_guru;
+      document.getElementById('print-guru-nip').textContent = s.nip_guru;
+      document.getElementById('print-guru-pangkat').textContent = s.pangkat_guru;
+      document.getElementById('print-guru-jabatan').textContent = s.jabatan_guru;
+      document.getElementById('print-guru-unit').textContent = s.unit_guru;
+
+      document.getElementById('print-tgl-berangkat-1').textContent = s.tgl_berangkat;
+      document.getElementById('print-tempat-tujuan-1').textContent = s.tempat_tujuan;
+      document.getElementById('print-keperluan-1').textContent = s.keperluan;
+      document.getElementById('print-ttd-kota-tgl').textContent = `${settingsData.kota_sekolah}, ${s.tgl_surat}`;
+      document.getElementById('print-ttd-kepsek-nama-1').textContent = settingsData.nama_kepsek;
+
+      // Populate Page 2 (SPPD)
+      document.getElementById('print-no-sppd').textContent = `Nomor: ${s.no_sppd}`;
+      document.getElementById('print-sppd-pejabat').textContent = settingsData.jabatan_kepsek;
+      document.getElementById('print-sppd-nama-guru').textContent = s.nama_guru;
+      document.getElementById('sppd-val-pangkat').textContent = s.pangkat_guru;
+      document.getElementById('sppd-val-jabatan').textContent = s.jabatan_guru;
+      document.getElementById('print-sppd-keperluan').textContent = `: ${s.keperluan}`;
+      document.getElementById('print-sppd-alat').textContent = `: ${s.alat_angkut}`;
+      document.getElementById('print-sppd-berangkat-dari').textContent = `: ${s.tempat_berangkat}`;
+      document.getElementById('print-sppd-tujuan').textContent = `: ${s.tempat_tujuan}`;
+      document.getElementById('print-sppd-lama').textContent = `: ${s.lama_perjalanan}`;
+      document.getElementById('print-sppd-tgl-berangkat').textContent = `: ${s.tgl_berangkat}`;
+      document.getElementById('print-sppd-tgl-kembali').textContent = `: ${s.tgl_kembali}`;
+
+      document.getElementById('print-sppd-keluar-di').textContent = settingsData.kota_sekolah;
+      document.getElementById('print-sppd-keluar-tgl').textContent = s.tgl_surat;
+      document.getElementById('print-sppd-ttd-jabatan').textContent = settingsData.jabatan_kepsek;
+      document.getElementById('print-sppd-ttd-nama').textContent = settingsData.nama_kepsek;
+
+      // SPPD Kolom Kanan
+      document.getElementById('print-sppd-i-dari').textContent = s.tempat_berangkat;
+      document.getElementById('print-sppd-i-tgl').textContent = s.tgl_berangkat;
+      document.getElementById('print-sppd-i-ke').textContent = s.tempat_tujuan;
+      document.getElementById('print-sppd-i-jabatan').textContent = settingsData.jabatan_kepsek;
+      document.getElementById('print-sppd-i-nama').textContent = settingsData.nama_kepsek;
+
+      document.getElementById('print-sppd-v-kembali').textContent = s.tempat_berangkat;
+      document.getElementById('print-sppd-v-tgl').textContent = s.tgl_kembali;
+      document.getElementById('print-sppd-v-jabatan').textContent = settingsData.jabatan_kepsek;
+      document.getElementById('print-sppd-v-nama').textContent = settingsData.nama_kepsek;
+
+      document.getElementById('modal-preview').classList.remove('hidden');
+    }
+
+    function closeModalPreview() {
+      document.getElementById('modal-preview').classList.add('hidden');
+    }
+
+    function executePrint() {
+      window.print();
+    }
+  </script>
+</body>
+</html>
