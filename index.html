@@ -54,18 +54,115 @@
       min-height: 330mm;
     }
 
-    /* KOP SURAT DOUBLE BORDER */
+    /* SETIAP HALAMAN PREVIEW HARUS MENJADI LEMBAR PUTIH UTUH */
+    .document-page {
+      width: 100%;
+      min-height: 950px;
+      background: #fff !important;
+      color: #000;
+      box-sizing: border-box;
+      flex: 0 0 auto;
+      position: relative;
+      overflow: visible;
+    }
+
+    #print-area {
+      background: transparent !important;
+      box-sizing: border-box;
+    }
+
+    /* KOP SURAT - FORMAT RESMI, TIDAK TERKESAN KAKU */
+    .kop-surat {
+      display: grid;
+      grid-template-columns: 82px minmax(0, 1fr) 82px;
+      align-items: center;
+      width: 100%;
+      min-height: 86px;
+      padding: 2px 0 8px;
+      box-sizing: border-box;
+    }
+    .kop-surat .kop-logo {
+      width: 72px;
+      height: 72px;
+      object-fit: contain;
+      justify-self: center;
+    }
+    .kop-surat .kop-spacer {
+      width: 82px;
+      height: 1px;
+    }
+    .kop-surat .kop-center {
+      text-align: center;
+      line-height: 1.15;
+    }
+    .kop-surat .kop-center .kop-jenis {
+      font-size: 15px;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin: 0;
+    }
+    .kop-surat .kop-center .kop-nama {
+      font-size: 19px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      margin: 1px 0 2px;
+    }
+    .kop-surat .kop-center .kop-detail {
+      font-size: 10.5px;
+      margin: 0;
+    }
+    .kop-surat .kop-center .kop-kota {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .4px;
+      margin-top: 2px;
+    }
     .border-kop {
-      border-bottom: 3px solid #000;
+      border-bottom: 3px solid #111;
       position: relative;
     }
     .border-kop::after {
       content: '';
       position: absolute;
-      bottom: -5px;
       left: 0;
       right: 0;
-      border-bottom: 1px solid #000;
+      bottom: -6px;
+      border-bottom: 1px solid #111;
+    }
+
+    .kop-surat.kop-sppd {
+      grid-template-columns: 70px minmax(0, 1fr) 70px;
+      min-height: 70px;
+      padding-bottom: 7px;
+    }
+    .kop-surat.kop-sppd .kop-logo {
+      width: 58px;
+      height: 58px;
+    }
+    .kop-surat.kop-sppd .kop-spacer {
+      width: 70px;
+    }
+    .kop-surat.kop-sppd .kop-center .kop-jenis {
+      font-size: 13px;
+    }
+    .kop-surat.kop-sppd .kop-center .kop-nama {
+      font-size: 17px;
+    }
+    .kop-surat.kop-sppd .kop-center .kop-detail {
+      font-size: 9px;
+    }
+    .kop-surat.kop-sppd .kop-center .kop-kota {
+      font-size: 9.5px;
+    }
+
+    @media print {
+      #print-area {
+        background: transparent !important;
+      }
+      .document-page {
+        background: #fff !important;
+      }
     }
 
     /* SPPD TABLE BORDER STYLES */
@@ -79,6 +176,8 @@
       vertical-align: top;
       font-size: 13px;
     }
+    .welcome-card { animation: welcomeIn .28s ease-out; }
+    @keyframes welcomeIn { from { opacity:0; transform:translateY(10px) scale(.98); } to { opacity:1; transform:translateY(0) scale(1); } }
   </style>
 
   <!-- DYNAMIC PRINT STYLESHEET HOLDER -->
@@ -360,12 +459,37 @@
 
         <!-- VIEW: MANAJEMEN PENGGUNA -->
         <div id="view-users" class="hidden space-y-6">
-          <div class="flex justify-between items-center border-b pb-4">
-            <div><h2 class="text-xl font-bold text-slate-800">Manajemen Pengguna</h2><p class="text-xs text-slate-500">Kelola akun Admin dan Operator yang boleh menggunakan aplikasi.</p></div>
-            <button onclick="addUserPrompt()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow"><i class="fa-solid fa-user-plus mr-1"></i> Tambah Pengguna</button>
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b pb-4">
+            <div>
+              <h2 class="text-xl font-bold text-slate-800">Manajemen Pengguna</h2>
+              <p class="text-xs text-slate-500">Tambah, edit akun, ubah password, dan atur hak akses pengguna aplikasi.</p>
+            </div>
+            <button onclick="openUserModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2 rounded-lg shadow flex items-center gap-2">
+              <i class="fa-solid fa-user-plus"></i> Tambah Pengguna
+            </button>
           </div>
-          <div class="overflow-x-auto border rounded-xl shadow-sm">
-            <table class="w-full text-sm text-left text-slate-600"><thead class="text-xs text-slate-700 uppercase bg-slate-100 border-b"><tr><th class="px-4 py-3">Username</th><th class="px-4 py-3">Nama</th><th class="px-4 py-3">Role</th><th class="px-4 py-3">Status</th><th class="px-4 py-3 text-center">Aksi</th></tr></thead><tbody id="table-users"></tbody></table>
+
+          <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-xs text-blue-800 flex gap-3 items-start">
+            <i class="fa-solid fa-shield-halved mt-0.5"></i>
+            <div><b>Hak akses:</b> Admin dapat mengelola pengguna dan pengaturan sekolah. Operator dapat membuat, mengedit, mencetak, dan mengarsipkan Surat Tugas/SPPD.</div>
+          </div>
+
+          <div class="overflow-x-auto border rounded-xl shadow-sm bg-white">
+            <table class="w-full text-sm text-left text-slate-600">
+              <thead class="text-xs text-slate-700 uppercase bg-slate-100 border-b">
+                <tr>
+                  <th class="px-4 py-3">Username</th>
+                  <th class="px-4 py-3">Nama</th>
+                  <th class="px-4 py-3">Role</th>
+                  <th class="px-4 py-3">Password</th>
+                  <th class="px-4 py-3">Status</th>
+                  <th class="px-4 py-3 text-center">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="table-users">
+                <tr><td colspan="6" class="px-4 py-8 text-center text-slate-400">Belum ada data pengguna.</td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
@@ -437,7 +561,181 @@
           </form>
         </div>
 
+        <!-- VIEW: KELOLA ARSIP & DATABASE KHUSUS ADMIN -->
+        <div id="view-database" class="hidden space-y-6">
+          <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b pb-4">
+            <div>
+              <h2 class="text-xl font-bold text-slate-800">Kelola Arsip & Database</h2>
+              <p class="text-xs text-slate-500">Hapus arsip surat yang sudah tidak diperlukan agar database tetap ringan.</p>
+            </div>
+            <div class="px-4 py-2 rounded-xl bg-indigo-50 border border-indigo-100 text-sm">
+              <span class="text-slate-500">Total arsip:</span>
+              <strong id="db-total-surat" class="text-indigo-700 ml-1">0</strong>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <div class="bg-white border border-red-100 rounded-2xl p-5 shadow-sm">
+              <div class="flex items-start gap-3">
+                <div class="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center"><i class="fa-solid fa-trash"></i></div>
+                <div>
+                  <h3 class="font-bold text-slate-800">Hapus Surat Satuan</h3>
+                  <p class="text-xs text-slate-500 mt-1">Pilih satu arsip lalu hapus permanen dari database.</p>
+                </div>
+              </div>
+              <div class="mt-4">
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Pilih Surat</label>
+                <select id="db-single-surat" class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500">
+                  <option value="">-- pilih arsip --</option>
+                </select>
+              </div>
+              <button type="button" onclick="deleteSingleFromDatabase()" class="mt-3 w-full px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-semibold shadow">
+                <i class="fa-solid fa-trash mr-1"></i> Hapus Surat Terpilih
+              </button>
+            </div>
+
+            <div class="bg-white border border-amber-100 rounded-2xl p-5 shadow-sm">
+              <div class="flex items-start gap-3">
+                <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center"><i class="fa-solid fa-calendar-xmark"></i></div>
+                <div>
+                  <h3 class="font-bold text-slate-800">Hapus Arsip Bulanan</h3>
+                  <p class="text-xs text-slate-500 mt-1">Menghapus seluruh surat berdasarkan bulan dan tahun tanggal surat.</p>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-3 mt-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Bulan</label>
+                  <select id="db-month" class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500">
+                    <option value="1">Januari</option><option value="2">Februari</option><option value="3">Maret</option><option value="4">April</option><option value="5">Mei</option><option value="6">Juni</option><option value="7">Juli</option><option value="8">Agustus</option><option value="9">September</option><option value="10">Oktober</option><option value="11">November</option><option value="12">Desember</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Tahun</label>
+                  <select id="db-year" class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm"></select>
+                </div>
+              </div>
+              <div id="db-month-count" class="mt-3 text-xs text-slate-500 bg-slate-50 rounded-lg px-3 py-2">Pilih periode untuk melihat jumlah arsip.</div>
+              <button type="button" onclick="deleteMonthlyFromDatabase(this)" class="mt-3 w-full px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm font-semibold shadow">
+                <i class="fa-solid fa-calendar-minus mr-1"></i> Hapus Semua Arsip Bulan Ini
+              </button>
+            </div>
+          </div>
+
+          <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-800">
+            <i class="fa-solid fa-triangle-exclamation mr-1"></i> <strong>Peringatan:</strong> penghapusan bersifat permanen dari Google Spreadsheet. Dokumen yang sudah dihapus tidak dapat dicetak kembali melalui arsip aplikasi. Gunakan menu ini hanya untuk arsip yang benar-benar sudah tidak diperlukan.
+          </div>
+
+          <div class="overflow-x-auto border rounded-xl shadow-sm bg-white">
+            <table class="w-full text-sm text-left text-slate-600">
+              <thead class="text-xs text-slate-700 uppercase bg-slate-100 border-b">
+                <tr><th class="px-4 py-3">No.</th><th class="px-4 py-3">No. Surat</th><th class="px-4 py-3">Guru</th><th class="px-4 py-3">Tanggal</th><th class="px-4 py-3 text-center">Aksi</th></tr>
+              </thead>
+              <tbody id="table-database-surat"></tbody>
+            </table>
+          </div>
+        </div>
+
       </main>
+    </div>
+
+    <!-- MODAL MANAJEMEN PENGGUNA -->
+    <div id="modal-user" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[70] hidden items-center justify-center p-4">
+      <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full relative overflow-hidden">
+        <div class="px-6 py-4 bg-gradient-to-r from-indigo-700 to-blue-600 text-white flex items-center justify-between">
+          <div>
+            <h3 id="user-modal-title" class="font-bold text-lg">Tambah Pengguna</h3>
+            <p class="text-xs text-indigo-100">Kelola akun login E-Surat & SPPD</p>
+          </div>
+          <button type="button" onclick="closeUserModal()" class="w-9 h-9 rounded-lg bg-white/10 hover:bg-white/20 transition"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <form onsubmit="handleSaveUser(event)" class="p-6 space-y-4">
+          <input type="hidden" id="user-id">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Username *</label>
+              <input id="user-username" type="text" required autocomplete="off" class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="operator01">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Role *</label>
+              <select id="user-role" required class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                <option value="Operator">Operator</option>
+                <option value="Admin">Admin</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Lengkap *</label>
+            <input id="user-nama" type="text" required class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Nama Operator / Administrator">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Password *</label>
+            <div class="relative">
+              <input id="user-password" type="password" required autocomplete="new-password" class="w-full px-3 py-2.5 pr-11 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Masukkan password">
+              <button type="button" onclick="toggleUserPassword('user-password','user-password-eye')" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 text-slate-400 hover:text-indigo-600" title="Tampilkan password">
+                <i id="user-password-eye" class="fa-solid fa-eye"></i>
+              </button>
+            </div>
+            <p id="user-password-help" class="text-[11px] text-slate-400 mt-1">Saat edit, kosongkan jika password tidak ingin diubah.</p>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Status *</label>
+            <select id="user-status" required class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+              <option value="Aktif">Aktif</option>
+              <option value="Nonaktif">Nonaktif</option>
+            </select>
+          </div>
+          <div class="pt-3 border-t flex justify-end gap-2">
+            <button type="button" onclick="closeUserModal()" class="px-4 py-2.5 border border-slate-300 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50">Batal</button>
+            <button id="btn-save-user" type="submit" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold shadow flex items-center gap-2">
+              <i class="fa-solid fa-floppy-disk"></i> Simpan Pengguna
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL WELCOME / PETUNJUK AWAL -->
+    <div id="modal-welcome" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+      <div class="welcome-card bg-white rounded-3xl shadow-2xl max-w-xl w-full p-6 sm:p-7 relative border border-slate-200">
+        <button onclick="closeWelcomeModal()" class="absolute top-4 right-4 w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition" aria-label="Tutup">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <div class="flex items-center gap-4 mb-5 pr-8">
+          <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shadow-lg overflow-hidden">
+            <img src="https://res.cloudinary.com/bwmgqxug/image/upload/v1789022731/logo95_-_Copy.png" class="w-12 h-12 object-contain" alt="Logo SMKS Budi Mulya">
+          </div>
+          <div>
+            <h3 class="text-xl sm:text-2xl font-extrabold text-slate-800">Selamat Datang di E-Surat &amp; SPPD</h3>
+            <p class="text-sm text-slate-500 mt-1">SMKS Budi Mulya · Sistem Surat Tugas &amp; Perjalanan Dinas</p>
+          </div>
+        </div>
+
+        <div class="space-y-2.5">
+          <div class="flex gap-3 items-start rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <span class="shrink-0 w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold">1</span>
+            <div><p class="font-bold text-slate-800">Login pengguna</p><p class="text-xs sm:text-sm text-slate-500 mt-1 leading-relaxed">Masuk menggunakan akun <b>Admin</b> atau <b>Operator</b> yang terdaftar di database aplikasi.</p></div>
+          </div>
+          <div class="flex gap-3 items-start rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <span class="shrink-0 w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold">2</span>
+            <div><p class="font-bold text-slate-800">Buat Surat Tugas &amp; SPPD</p><p class="text-xs sm:text-sm text-slate-500 mt-1 leading-relaxed">Isi data guru, tujuan, keperluan, serta tanggal perjalanan. Dokumen tersimpan di database.</p></div>
+          </div>
+          <div class="flex gap-3 items-start rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <span class="shrink-0 w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold">3</span>
+            <div><p class="font-bold text-slate-800">Cetak &amp; arsipkan</p><p class="text-xs sm:text-sm text-slate-500 mt-1 leading-relaxed">Pilih A4 atau F4, lalu cetak kembali kapan saja dari menu Arsip Surat.</p></div>
+          </div>
+        </div>
+
+        <div class="mt-6 pt-5 border-t border-slate-200 flex flex-col sm:flex-row gap-3 sm:items-center">
+          <label class="flex items-center gap-2 text-xs text-slate-500 cursor-pointer order-2 sm:order-1">
+            <input id="welcome-dont-show" type="checkbox" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+            <span>Jangan tampilkan lagi</span>
+          </label>
+          <button onclick="openLoginFromWelcome()" class="order-1 sm:order-2 flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-indigo-200 transition flex items-center justify-center gap-2">
+            Login untuk Masuk <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- MODAL LOGIN ADMIN -->
@@ -451,18 +749,18 @@
           <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-2 text-xl font-bold">
             <i class="fa-solid fa-user-shield"></i>
           </div>
-          <h3 class="text-lg font-bold text-slate-800">Login Administrator</h3>
-          <p class="text-xs text-slate-500 mt-1">Masuk untuk mengakses menu Pengaturan Kepsek & Sekolah</p>
+          <h3 class="text-lg font-bold text-slate-800">Login E-Surat & SPPD</h3>
+          <p class="text-xs text-slate-500 mt-1">Masuk menggunakan akun Admin atau Operator</p>
         </div>
 
         <form onsubmit="handleAdminLogin(event)" class="space-y-4">
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">Username</label>
-            <input type="text" id="login-admin-username" required class="w-full px-3.5 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500" placeholder="admin">
+            <input type="text" id="login-admin-username" autocomplete="username" required class="w-full px-3.5 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500" placeholder="admin">
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">Password</label>
-            <input type="password" id="login-admin-password" required class="w-full px-3.5 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500" placeholder="••••••••">
+            <input type="password" id="login-admin-password" autocomplete="current-password" required class="w-full px-3.5 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500" placeholder="••••••••">
           </div>
 
           <div class="p-2.5 bg-blue-50 border border-blue-200 rounded-lg text-[11px] text-blue-800">
@@ -471,7 +769,7 @@
           </div>
 
           <button type="submit" id="btn-admin-login-submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg shadow transition flex justify-center items-center text-sm">
-            <span>Masuk Mode Admin</span>
+            <span>Login</span>
           </button>
         </form>
       </div>
@@ -511,23 +809,22 @@
 
       <!-- CONTAINER DOKUMEN CETAK 2 HALAMAN -->
       <div class="max-w-5xl w-full mx-auto my-4 flex flex-col items-center gap-8 overflow-y-auto">
-        <div id="print-area" class="paper-a4 bg-white p-8 sm:p-12 shadow-2xl text-black surat-font text-slate-900 leading-normal">
+        <div id="print-area" class="paper-a4 bg-transparent p-8 sm:p-12 shadow-2xl text-black surat-font text-slate-900 leading-normal">
           
           <!-- ================= HALAMAN 1: SURAT TUGAS ================= -->
-          <div id="page-1-surat-tugas" class="page-break flex flex-col justify-between min-h-[950px] pb-6">
+          <div id="page-1-surat-tugas" class="document-page page-break flex flex-col justify-between pb-6">
             <div>
               <!-- KOP SURAT HALAMAN 1 -->
-              <div class="flex items-center justify-between border-kop pb-2 mb-6">
-                <div class="w-20 flex justify-center">
-                  <img id="print-logo-1" src="https://res.cloudinary.com/bwmgqxug/image/upload/v1789022731/logo95_-_Copy.png" class="w-20 h-auto" alt="Logo Sekolah">
+              <div class="kop-surat border-kop mb-6">
+                <div><img id="print-logo-1" src="https://res.cloudinary.com/bwmgqxug/image/upload/v1789022731/logo95_-_Copy.png" class="kop-logo" alt="Logo Sekolah"></div>
+                <div class="kop-center">
+                  <p class="kop-jenis" id="print-header-jenis">SEKOLAH MENENGAH KEJURUAN</p>
+                  <p class="kop-nama" id="print-header-nama">SMKS BUDI MULYA</p>
+                  <p class="kop-detail" id="print-header-alamat">Jl. Wonosari, Sambeng-Kasiman, Bojonegoro Telp.(0296) 423345</p>
+                  <p class="kop-detail">e-mail: <span id="print-header-email">smkbudimulyakasiman@gmail.com</span></p>
+                  <p class="kop-kota" id="print-header-kota">KASIMAN BOJONEGORO-62164</p>
                 </div>
-                <div class="text-center flex-1 px-2">
-                  <h2 class="font-bold text-base uppercase leading-tight tracking-wide" id="print-header-jenis">SEKOLAH MENENGAH KEJURUAN</h2>
-                  <h1 class="font-bold text-xl uppercase tracking-wider my-0.5" id="print-header-nama">SMKS BUDI MULYA</h1>
-                  <p class="text-xs leading-tight" id="print-header-alamat">Alamat : Jl. Wonosari, Sambeng-Kasiman, Bojonegoro Telp.(0296) 423345</p>
-                  <p class="text-xs leading-tight">e-mail: <span id="print-header-email">smkbudimulyakasiman@gmail.com</span></p>
-                  <p class="font-bold text-xs tracking-wider mt-0.5" id="print-header-kota">KASIMAN BOJONEGORO-62164</p>
-                </div>
+                <div class="kop-spacer" aria-hidden="true"></div>
               </div>
 
               <!-- JUDUL SURAT TUGAS -->
@@ -633,19 +930,18 @@
           </div>
 
           <!-- ================= HALAMAN 2: SPPD ================= -->
-          <div id="page-2-sppd" class="min-h-[950px] pt-4">
+          <div id="page-2-sppd" class="document-page pt-4">
             <!-- KOP SURAT HALAMAN 2 -->
-            <div class="flex items-center justify-between border-kop pb-2 mb-4">
-              <div class="w-16 flex justify-center">
-                <img id="print-logo-2" src="https://res.cloudinary.com/bwmgqxug/image/upload/v1789022731/logo95_-_Copy.png" class="w-16 h-auto" alt="Logo Sekolah">
+            <div class="kop-surat kop-sppd border-kop mb-4">
+              <div><img id="print-logo-2" src="https://res.cloudinary.com/bwmgqxug/image/upload/v1789022731/logo95_-_Copy.png" class="kop-logo" alt="Logo Sekolah"></div>
+              <div class="kop-center">
+                <p class="kop-jenis" id="print-header-jenis-2">SEKOLAH MENENGAH KEJURUAN</p>
+                <p class="kop-nama" id="print-header-nama-2">SMKS BUDI MULYA</p>
+                <p class="kop-detail" id="print-header-alamat-2">Jl. Wonosari, Sambeng-Kasiman, Bojonegoro Telp.(0296) 423345</p>
+                <p class="kop-detail">e-mail: <span id="print-header-email-2">smkbudimulyakasiman@gmail.com</span></p>
+                <p class="kop-kota" id="print-header-kota-2">KASIMAN BOJONEGORO-62164</p>
               </div>
-              <div class="text-center flex-1 px-2">
-                <h2 class="font-bold text-xs uppercase leading-tight" id="print-header-jenis-2">SEKOLAH MENENGAH KEJURUAN</h2>
-                <h1 class="font-bold text-base uppercase tracking-wider my-0.5" id="print-header-nama-2">SMKS BUDI MULYA</h1>
-                <p class="text-[10px] leading-tight" id="print-header-alamat-2">Alamat : Jl. Wonosari, Sambeng-Kasiman, Bojonegoro Telp.(0296) 423345</p>
-                <p class="text-[10px] leading-tight">e-mail: <span id="print-header-email-2">smkbudimulyakasiman@gmail.com</span></p>
-                <p class="font-bold text-[10px] tracking-wider" id="print-header-kota-2">KASIMAN BOJONEGORO-62164</p>
-              </div>
+              <div class="kop-spacer" aria-hidden="true"></div>
             </div>
 
             <!-- JUDUL SPPD -->
@@ -882,7 +1178,6 @@
 
   </div>
 
-  <!-- CONFIGURATION: URL backend disimpan terpisah agar mudah diganti di GitHub -->
   <script src="config.js"></script>
 
   <!-- JAVASCRIPT APP ENGINE -->
@@ -893,6 +1188,7 @@
     const IS_PREVIEW = false;
     const APP_CONFIG = window.ESURAT_CONFIG || {};
     const GAS_URL = APP_CONFIG.GAS_URL || '';
+    const SESSION_STORAGE_KEY = APP_CONFIG.SESSION_STORAGE_KEY || 'esurat_user';
     let currentUser = null;
     let selectedPaperSize = APP_CONFIG.DEFAULT_PAPER_SIZE || 'a4';
 
@@ -957,55 +1253,71 @@
     }
 
     function initApp() {
-      const savedUser = sessionStorage.getItem('esurat_user');
+      const savedUser = sessionStorage.getItem(SESSION_STORAGE_KEY);
       if (savedUser) {
         try {
           const parsed = JSON.parse(savedUser);
-          currentUser = parsed && parsed.token ? parsed : null;
-        } catch (_) { currentUser = null; }
+          if (parsed && parsed.token && parsed.expires_at && new Date(parsed.expires_at).getTime() > Date.now()) {
+            currentUser = parsed;
+          } else {
+            sessionStorage.removeItem(SESSION_STORAGE_KEY);
+          }
+        } catch (_) {
+          sessionStorage.removeItem(SESSION_STORAGE_KEY);
+        }
       }
 
-      setPaperSize(selectedPaperSize);
       renderUserInterface();
-      if (currentUser) {
-        loadAllData();
+      setPaperSize(selectedPaperSize);
+
+      if (currentUser && currentUser.token) {
+        closeWelcomeModal();
+        closeAdminLoginModal();
         switchView('dashboard');
       } else {
-        showLoginRequired();
+        lockApplication();
+        if (localStorage.getItem('esurat_welcome_seen') === '1') {
+          closeWelcomeModal();
+          openAdminLoginModal();
+        }
       }
     }
 
-    /* ==========================================================================
-       AUTENTIKASI ADMIN / OPERATOR
-       ========================================================================== */
+    function lockApplication() {
+      const sidebar = document.getElementById('sidebar');
+      const main = document.querySelector('main');
+      if (sidebar) sidebar.classList.add('opacity-40', 'pointer-events-none');
+      if (main) main.classList.add('opacity-40', 'pointer-events-none');
+    }
+
+    function unlockApplication() {
+      const sidebar = document.getElementById('sidebar');
+      const main = document.querySelector('main');
+      if (sidebar) sidebar.classList.remove('opacity-40', 'pointer-events-none');
+      if (main) main.classList.remove('opacity-40', 'pointer-events-none');
+    }
+
+    function closeWelcomeModal() {
+      const el = document.getElementById('modal-welcome');
+      if (el) el.classList.add('hidden');
+    }
+
+    function openLoginFromWelcome() {
+      const dontShow = document.getElementById('welcome-dont-show');
+      if (dontShow && dontShow.checked) localStorage.setItem('esurat_welcome_seen', '1');
+      closeWelcomeModal();
+      openAdminLoginModal();
+    }
+
     function openAdminLoginModal() {
-      document.getElementById('modal-admin-login').classList.remove('hidden');
-      const title = document.querySelector('#modal-admin-login h3');
-      if (title) title.textContent = 'Login E-Surat & SPPD';
-      const desc = document.querySelector('#modal-admin-login p');
-      if (desc) desc.textContent = 'Login diperlukan untuk mengakses aplikasi.';
-      const submit = document.getElementById('btn-admin-login-submit');
-      if (submit) submit.innerHTML = '<span>Masuk Aplikasi</span>';
+      const modal = document.getElementById('modal-admin-login');
+      if (modal) modal.classList.remove('hidden');
+      setTimeout(() => document.getElementById('login-admin-username')?.focus(), 100);
     }
 
     function closeAdminLoginModal() {
-      document.getElementById('modal-admin-login').classList.add('hidden');
-    }
-
-    function showLoginRequired() {
-      renderUserInterface();
-      const views = ['dashboard','form-surat','arsip','master-guru','users','settings'];
-      views.forEach(v => { const el=document.getElementById('view-'+v); if(el) el.classList.add('hidden'); });
-      document.getElementById('view-dashboard').classList.remove('hidden');
-      document.getElementById('view-dashboard').innerHTML = `
-        <div class="min-h-[420px] flex items-center justify-center">
-          <div class="text-center max-w-md">
-            <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-2xl"><i class="fa-solid fa-lock"></i></div>
-            <h2 class="text-xl font-bold text-slate-800">Login diperlukan</h2>
-            <p class="text-sm text-slate-500 mt-2 mb-5">Aplikasi E-Surat & SPPD hanya dapat digunakan oleh Admin atau Operator yang terdaftar.</p>
-            <button onclick="openAdminLoginModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg font-semibold text-sm"><i class="fa-solid fa-right-to-bracket mr-2"></i>Login Sekarang</button>
-          </div>
-        </div>`;
+      const modal = document.getElementById('modal-admin-login');
+      if (modal) modal.classList.add('hidden');
     }
 
     function handleAdminLogin(e) {
@@ -1013,64 +1325,360 @@
       const u = document.getElementById('login-admin-username').value.trim();
       const p = document.getElementById('login-admin-password').value;
       const btn = document.getElementById('btn-admin-login-submit');
+
       btn.disabled = true;
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Verifikasi...';
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Verifikasi...`;
 
       apiRequest('login', { username: u, password: p })
         .then(res => {
-          if (res.status !== 'success' || !res.user || !res.user.token) throw new Error(res.message || 'Login gagal.');
-          currentUser = res.user;
-          sessionStorage.setItem('esurat_user', JSON.stringify(currentUser));
-          closeAdminLoginModal();
-          renderUserInterface();
-          loadAllData();
-          switchView('dashboard');
+          if (res.status === 'success' && res.user && res.user.token) {
+            currentUser = res.user;
+            sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(currentUser));
+            document.getElementById('login-admin-password').value = '';
+            closeAdminLoginModal();
+            unlockApplication();
+            renderUserInterface();
+            switchView('dashboard');
+          } else {
+            throw new Error(res.message || 'Login gagal.');
+          }
         })
         .catch(err => showApiError(err, 'Login gagal.'))
-        .finally(() => { btn.disabled=false; btn.innerHTML='<span>Masuk Aplikasi</span>'; });
+        .finally(() => {
+          btn.disabled = false;
+          btn.innerHTML = `<span>Login</span>`;
+        });
     }
 
     function logoutAdmin() {
-      if (currentUser && currentUser.token) apiRequest('logout').catch(()=>{});
-      sessionStorage.removeItem('esurat_user');
+      if (currentUser && currentUser.token) apiRequest('logout').catch(() => {});
+      sessionStorage.removeItem(SESSION_STORAGE_KEY);
       currentUser = null;
       renderUserInterface();
-      showLoginRequired();
+      lockApplication();
+      closeAdminLoginModal();
+      const welcome = document.getElementById('modal-welcome');
+      if (welcome) {
+        if (localStorage.getItem('esurat_welcome_seen') === '1') {
+          welcome.classList.add('hidden');
+          openAdminLoginModal();
+        } else {
+          welcome.classList.remove('hidden');
+        }
+      }
     }
 
     function renderUserInterface() {
       const authNav = document.getElementById('nav-auth-container');
-      const menu = document.getElementById('menu-container');
-      if (!currentUser) {
-        authNav.innerHTML = `<button onclick="openAdminLoginModal()" class="bg-indigo-800 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded transition flex items-center gap-1.5"><i class="fa-solid fa-right-to-bracket"></i> Login</button>`;
-        menu.innerHTML = `<div class="p-3 text-xs text-slate-500 bg-slate-50 rounded-lg"><i class="fa-solid fa-lock mr-1"></i> Login untuk membuka menu aplikasi.</div>`;
-        return;
+
+      if (currentUser && currentUser.token) {
+        authNav.innerHTML = `
+          <div class="hidden sm:block text-right mr-1">
+            <p class="text-xs font-bold text-white">${currentUser.nama || currentUser.username}</p>
+            <p class="text-[10px] text-indigo-200">${currentUser.role || 'Pengguna'}</p>
+          </div>
+          <span class="bg-indigo-800 text-indigo-100 text-xs px-2.5 py-1 rounded-md font-semibold border border-indigo-700">
+            <i class="fa-solid fa-user-check text-emerald-300 mr-1"></i> ${currentUser.role || 'Pengguna'}
+          </span>
+          <button onclick="logoutAdmin()" class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-3 py-1.5 rounded transition shadow">
+            <i class="fa-solid fa-right-from-bracket mr-1"></i> Keluar
+          </button>
+        `;
+      } else {
+        authNav.innerHTML = `
+          <button onclick="openAdminLoginModal()" class="bg-white hover:bg-indigo-50 text-indigo-800 text-xs font-bold px-3.5 py-2 rounded-xl transition shadow flex items-center gap-1.5">
+            <i class="fa-solid fa-right-to-bracket"></i> Login
+          </button>
+        `;
       }
 
-      const roleIcon = currentUser.role === 'Admin' ? 'fa-user-shield' : 'fa-user-gear';
-      authNav.innerHTML = `<span class="bg-indigo-800 text-indigo-100 text-xs px-2.5 py-1 rounded-md font-semibold border border-indigo-700"><i class="fa-solid ${roleIcon} text-amber-400 mr-1"></i>${currentUser.nama || currentUser.username} · ${currentUser.role}</span><button onclick="logoutAdmin()" class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-3 py-1.5 rounded transition shadow"><i class="fa-solid fa-right-from-bracket mr-1"></i> Keluar</button>`;
-
+      // Render Dynamic Sidebar
+      const menu = document.getElementById('menu-container');
       let html = `
-        <button onclick="switchView('dashboard')" id="nav-dashboard" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition"><i class="fa-solid fa-chart-line w-5 text-center"></i> Dashboard</button>
-        <button onclick="switchView('form-surat')" id="nav-form-surat" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition"><i class="fa-solid fa-pen-to-square w-5 text-center"></i> Buat Surat Tugas</button>
-        <button onclick="switchView('arsip')" id="nav-arsip" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition"><i class="fa-solid fa-box-archive w-5 text-center"></i> Arsip Surat</button>
-        <button onclick="switchView('master-guru')" id="nav-master-guru" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition"><i class="fa-solid fa-users w-5 text-center"></i> Master Data Guru</button>`;
-      if (currentUser.role === 'Admin') html += `<div class="pt-3 my-2 border-t text-[11px] font-bold text-slate-400 uppercase tracking-wider">Khusus Admin</div><button onclick="switchView('users')" id="nav-users" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition"><i class="fa-solid fa-user-shield w-5 text-center"></i> Pengguna</button><button onclick="switchView('settings')" id="nav-settings" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition"><i class="fa-solid fa-sliders w-5 text-center"></i> Pengaturan Kepsek</button>`;
+        <button onclick="switchView('dashboard')" id="nav-dashboard" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition">
+          <i class="fa-solid fa-chart-line w-5 text-center"></i> Dashboard
+        </button>
+        <button onclick="switchView('form-surat')" id="nav-form-surat" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition">
+          <i class="fa-solid fa-pen-to-square w-5 text-center"></i> Buat Surat Tugas
+        </button>
+        <button onclick="switchView('arsip')" id="nav-arsip" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition">
+          <i class="fa-solid fa-box-archive w-5 text-center"></i> Arsip Surat
+        </button>
+        <button onclick="switchView('master-guru')" id="nav-master-guru" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition">
+          <i class="fa-solid fa-users w-5 text-center"></i> Master Data Guru
+        </button>
+      `;
+
+      if (currentUser && currentUser.role === 'Admin') {
+        html += `
+          <div class="pt-3 my-2 border-t text-[11px] font-bold text-slate-400 uppercase tracking-wider">Khusus Admin</div>
+          <button onclick="switchView('users')" id="nav-users" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition">
+            <i class="fa-solid fa-user-gear w-5 text-center"></i> Pengguna
+          </button>
+          <button onclick="switchView('settings')" id="nav-settings" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition">
+            <i class="fa-solid fa-sliders w-5 text-center"></i> Pengaturan Kepsek
+          </button>
+          <button onclick="switchView('database')" id="nav-database" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition">
+            <i class="fa-solid fa-database w-5 text-center"></i> Kelola Arsip & Database
+          </button>
+        `;
+      }
+
       menu.innerHTML = html;
-      if (currentUser.role === 'Admin') loadUsers();
+      if (currentUser && currentUser.token) loadAllData();
     }
+
+    /* ========================================================================
+       MANAJEMEN PENGGUNA
+       ======================================================================== */
+    let usersCache = [];
+
+    function openUserModal(user = null) {
+      if (!currentUser || currentUser.role !== 'Admin') return;
+      const modal = document.getElementById('modal-user');
+      const form = document.querySelector('#modal-user form');
+      document.getElementById('user-id').value = user?.id || '';
+      document.getElementById('user-username').value = user?.username || '';
+      document.getElementById('user-nama').value = user?.nama || '';
+      document.getElementById('user-role').value = user?.role || 'Operator';
+      document.getElementById('user-status').value = user?.status || 'Aktif';
+      const pass = document.getElementById('user-password');
+      pass.value = user ? '' : '';
+      pass.required = !user;
+      pass.type = 'password';
+      document.getElementById('user-password-eye').className = 'fa-solid fa-eye';
+      document.getElementById('user-password-help').textContent = user ? 'Kosongkan jika password tidak ingin diubah.' : 'Password akan disimpan untuk akun pengguna.';
+      document.getElementById('user-modal-title').textContent = user ? 'Edit Pengguna' : 'Tambah Pengguna';
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      setTimeout(() => document.getElementById('user-username')?.focus(), 80);
+    }
+
+    function closeUserModal() {
+      const modal = document.getElementById('modal-user');
+      if (modal) { modal.classList.add('hidden'); modal.classList.remove('flex'); }
+    }
+
+    function toggleUserPassword(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon = document.getElementById(iconId);
+      if (!input) return;
+      input.type = input.type === 'password' ? 'text' : 'password';
+      if (icon) icon.className = input.type === 'password' ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';
+    }
+
+    function loadUsers() {
+      if (!currentUser || currentUser.role !== 'Admin') return;
+      const tbody = document.getElementById('table-users');
+      if (!tbody) return;
+      tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-8 text-center text-slate-400"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Memuat pengguna...</td></tr>`;
+      apiRequest('getUsers')
+        .then(res => {
+          if (res.status !== 'success') throw new Error(res.message || 'Data pengguna gagal dimuat.');
+          usersCache = Array.isArray(res.users) ? res.users : [];
+          renderUsersTable();
+        })
+        .catch(err => {
+          tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-8 text-center text-red-500">${escapeHtml(err.message || 'Gagal memuat pengguna')}</td></tr>`;
+        });
+    }
+
+    function renderUsersTable() {
+      const tbody = document.getElementById('table-users');
+      if (!tbody) return;
+      if (!usersCache.length) {
+        tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-8 text-center text-slate-400">Belum ada data pengguna.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = usersCache.map(u => {
+        const isMainAdmin = u.username === 'admin';
+        const roleClass = u.role === 'Admin' ? 'bg-indigo-100 text-indigo-700' : 'bg-blue-100 text-blue-700';
+        const statusClass = u.status === 'Aktif' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500';
+        return `<tr class="border-b last:border-0 hover:bg-slate-50">
+          <td class="px-4 py-3 font-semibold text-slate-800">${escapeHtml(u.username)}</td>
+          <td class="px-4 py-3">${escapeHtml(u.nama || '-')}</td>
+          <td class="px-4 py-3"><span class="px-2 py-1 rounded-md text-[11px] font-bold ${roleClass}">${escapeHtml(u.role)}</span></td>
+          <td class="px-4 py-3">
+            <div class="flex items-center gap-2">
+              <input id="pw-${escapeAttr(u.id)}" type="password" value="${escapeAttr(u.password || '')}" readonly class="w-28 bg-slate-50 border border-slate-200 rounded px-2 py-1 text-xs">
+              <button type="button" onclick="toggleUserPassword('pw-${escapeAttr(u.id)}','eye-${escapeAttr(u.id)}')" class="w-7 h-7 text-slate-400 hover:text-indigo-600" title="Intip password"><i id="eye-${escapeAttr(u.id)}" class="fa-solid fa-eye"></i></button>
+            </div>
+          </td>
+          <td class="px-4 py-3"><span class="px-2 py-1 rounded-md text-[11px] font-bold ${statusClass}">${escapeHtml(u.status)}</span></td>
+          <td class="px-4 py-3 text-center whitespace-nowrap">
+            <button type="button" onclick="editUser('${escapeAttr(u.id)}')" class="text-indigo-600 hover:text-indigo-800 text-xs font-semibold mr-3"><i class="fa-solid fa-pen mr-1"></i>Edit</button>
+            ${isMainAdmin ? '<span class="text-[11px] text-slate-400">Admin Utama</span>' : `<button type="button" onclick="deleteUserPrompt('${escapeAttr(u.id)}')" class="text-red-600 hover:text-red-800 text-xs font-semibold"><i class="fa-solid fa-trash mr-1"></i>Hapus</button>`}
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    function editUser(id) {
+      const user = usersCache.find(u => String(u.id) === String(id));
+      if (user) openUserModal(user);
+    }
+
+    function handleSaveUser(e) {
+      e.preventDefault();
+      if (!currentUser || currentUser.role !== 'Admin') return;
+      const btn = document.getElementById('btn-save-user');
+      const id = document.getElementById('user-id').value.trim();
+      const data = {
+        id,
+        username: document.getElementById('user-username').value.trim(),
+        nama: document.getElementById('user-nama').value.trim(),
+        password: document.getElementById('user-password').value,
+        role: document.getElementById('user-role').value,
+        status: document.getElementById('user-status').value
+      };
+      if (!data.username || !data.nama || (!id && !data.password)) return;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
+      apiRequest('saveUser', { data })
+        .then(res => {
+          if (res.status !== 'success') throw new Error(res.message || 'Pengguna gagal disimpan.');
+          closeUserModal();
+          loadUsers();
+          alert(res.message || 'Pengguna berhasil disimpan.');
+        })
+        .catch(err => alert('Gagal menyimpan pengguna.\n\n' + (err.message || err)))
+        .finally(() => {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan Pengguna';
+        });
+    }
+
+    function deleteUserPrompt(id) {
+      const user = usersCache.find(u => String(u.id) === String(id));
+      if (!user) return;
+      if (user.username === 'admin') { alert('Admin utama tidak dapat dihapus.'); return; }
+      if (!confirm(`Hapus pengguna "${user.username}"?\n\nData akun akan dihapus dari database.`)) return;
+      apiRequest('deleteUser', { id })
+        .then(res => {
+          if (res.status !== 'success') throw new Error(res.message || 'Pengguna gagal dihapus.');
+          loadUsers();
+          alert(res.message || 'Pengguna berhasil dihapus.');
+        })
+        .catch(err => alert('Gagal menghapus pengguna.\n\n' + (err.message || err)));
+    }
+
+    /* ========================================================================
+       ADMIN DATABASE CLEANUP
+       ======================================================================== */
+    function renderDatabaseManager() {
+      if (!currentUser || currentUser.role !== 'Admin') return;
+      const total = document.getElementById('db-total-surat');
+      if (total) total.textContent = suratList.length;
+
+      const yearSelect = document.getElementById('db-year');
+      if (yearSelect && !yearSelect.options.length) {
+        const years = new Set([new Date().getFullYear()]);
+        suratList.forEach(s => {
+          const m = String(s.tgl_surat || s.tgl_berangkat || '').match(/(20\d{2})/);
+          if (m) years.add(Number(m[1]));
+        });
+        yearSelect.innerHTML = [...years].sort((a,b)=>b-a).map(y => `<option value="${y}">${y}</option>`).join('');
+        yearSelect.value = String(new Date().getFullYear());
+        yearSelect.onchange = updateDatabaseMonthCount;
+      }
+      const month = document.getElementById('db-month');
+      if (month) month.onchange = updateDatabaseMonthCount;
+      renderDatabaseTable();
+      updateDatabaseMonthCount();
+    }
+
+    function renderDatabaseTable() {
+      const tbody = document.getElementById('table-database-surat');
+      const select = document.getElementById('db-single-surat');
+      if (!tbody || !select) return;
+      if (!suratList.length) {
+        tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-8 text-center text-slate-400">Tidak ada arsip surat.</td></tr>`;
+        select.innerHTML = '<option value="">-- tidak ada arsip --</option>';
+        return;
+      }
+      tbody.innerHTML = suratList.map((s, i) => `
+        <tr class="border-b last:border-0 hover:bg-slate-50">
+          <td class="px-4 py-3">${i+1}</td>
+          <td class="px-4 py-3"><div class="font-semibold text-slate-800">${escapeHtml(s.no_tugas || '-')}</div><div class="text-xs text-slate-400">SPPD: ${escapeHtml(s.no_sppd || '-')}</div></td>
+          <td class="px-4 py-3">${escapeHtml(s.nama_guru || '-')}</td>
+          <td class="px-4 py-3 text-xs">${escapeHtml(s.tgl_surat || s.tgl_berangkat || '-')}</td>
+          <td class="px-4 py-3 text-center"><button type="button" onclick="deleteSingleFromDatabase('${escapeAttr(s.id)}')" class="text-red-600 hover:text-red-800 text-xs font-semibold"><i class="fa-solid fa-trash mr-1"></i>Hapus</button></td>
+        </tr>`).join('');
+      select.innerHTML = '<option value="">-- pilih arsip --</option>' + suratList.map(s => `<option value="${escapeAttr(s.id)}">${escapeHtml(s.no_tugas || s.id)} — ${escapeHtml(s.nama_guru || '')} — ${escapeHtml(s.tgl_surat || '')}</option>`).join('');
+    }
+
+    function parseSuratMonthYear(value) {
+      const str = String(value || '').toLowerCase();
+      const months = {'januari':1,'februari':2,'maret':3,'april':4,'mei':5,'juni':6,'juli':7,'agustus':8,'september':9,'oktober':10,'november':11,'desember':12};
+      const m = str.match(/(januari|februari|maret|april|mei|juni|juli|agustus|september|oktober|november|desember)\s+(20\d{2})/i);
+      if (m) return { month: months[m[1].toLowerCase()], year: Number(m[2]) };
+      const n = str.match(/(?:^|[^0-9])([0-3]?\d)[\/-]([0-1]?\d)[\/-](20\d{2})(?:[^0-9]|$)/);
+      if (n) return { month: Number(n[2]), year: Number(n[3]) };
+      const y = str.match(/(20\d{2})/);
+      return y ? {month:null, year:Number(y[1])} : {month:null, year:null};
+    }
+
+    function updateDatabaseMonthCount() {
+      const box = document.getElementById('db-month-count');
+      const month = Number(document.getElementById('db-month')?.value || 0);
+      const year = Number(document.getElementById('db-year')?.value || 0);
+      const count = suratList.filter(s => {
+        const d = parseSuratMonthYear(s.tgl_surat || s.tgl_berangkat);
+        return d.month === month && d.year === year;
+      }).length;
+      if (box) box.innerHTML = count ? `<strong>${count} arsip</strong> akan dihapus untuk periode yang dipilih.` : 'Tidak ada arsip pada periode yang dipilih.';
+    }
+
+    function deleteSingleFromDatabase(id) {
+      if (!currentUser || currentUser.role !== 'Admin') return;
+      const targetId = id || document.getElementById('db-single-surat')?.value;
+      if (!targetId) { alert('Pilih surat yang akan dihapus.'); return; }
+      const s = suratList.find(x => String(x.id) === String(targetId));
+      if (!s) { alert('Arsip surat tidak ditemukan.'); return; }
+      if (!confirm(`Hapus surat ini secara permanen?\n\n${s.no_tugas || '-'}\n${s.nama_guru || '-'}\n${s.tgl_surat || s.tgl_berangkat || '-'}\n\nData akan dihapus dari database.`)) return;
+      apiRequest('deleteSurat', { id: targetId }).then(res => {
+        if (res.status !== 'success') throw new Error(res.message || 'Gagal menghapus surat.');
+        return loadAllData();
+      }).then(() => { renderDatabaseManager(); alert('Arsip surat berhasil dihapus.'); })
+      .catch(err => showApiError(err, 'Gagal menghapus surat.'));
+    }
+
+    function deleteMonthlyFromDatabase(btn) {
+      if (!currentUser || currentUser.role !== 'Admin') return;
+      const month = Number(document.getElementById('db-month')?.value || 0);
+      const year = Number(document.getElementById('db-year')?.value || 0);
+      const monthNames = ['','Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+      const count = suratList.filter(s => { const d = parseSuratMonthYear(s.tgl_surat || s.tgl_berangkat); return d.month === month && d.year === year; }).length;
+      if (!count) { alert(`Tidak ada arsip untuk ${monthNames[month]} ${year}.`); return; }
+      if (!confirm(`Hapus SEMUA ${count} arsip surat pada ${monthNames[month]} ${year}?\n\nTindakan ini permanen dan tidak dapat dibatalkan.`)) return;
+      if (btn) btn.disabled = true;
+      apiRequest('deleteSuratByMonth', { month, year }).then(res => {
+        if (res.status !== 'success') throw new Error(res.message || 'Gagal menghapus arsip bulanan.');
+        return loadAllData();
+      }).then(() => { renderDatabaseManager(); alert(`${count} arsip ${monthNames[month]} ${year} berhasil dihapus.`); })
+      .catch(err => showApiError(err, 'Gagal menghapus arsip bulanan.'))
+      .finally(() => { if (btn) btn.disabled = false; });
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+    }
+    function escapeAttr(value) { return escapeHtml(value).replace(/`/g, '&#96;'); }
 
     /* ==========================================================================
        VIEW ROUTING & DATA LOAD
        ========================================================================== */
     function switchView(viewName) {
-      if (!currentUser) { openAdminLoginModal(); return; }
-      if ((viewName === 'settings' || viewName === 'users') && currentUser.role !== 'Admin') {
+      if (!currentUser || !currentUser.token) {
+        openAdminLoginModal();
+        return;
+      }
+      if ((viewName === 'settings' || viewName === 'users' || viewName === 'database') && currentUser.role !== 'Admin') {
         openAdminLoginModal();
         return;
       }
 
-      const views = ['dashboard', 'form-surat', 'arsip', 'master-guru', 'users', 'settings'];
+      const views = ['dashboard', 'form-surat', 'arsip', 'master-guru', 'users', 'settings', 'database'];
       views.forEach(v => {
         const el = document.getElementById(`view-${v}`);
         if (el) el.classList.add('hidden');
@@ -1086,6 +1694,7 @@
       if (activeNav) activeNav.classList.add('bg-indigo-50', 'text-indigo-600', 'font-bold');
 
       if (viewName === 'users') loadUsers();
+      if (viewName === 'database') renderDatabaseManager();
       if (viewName === 'form-surat' && !document.getElementById('surat-id').value) {
         resetFormSurat();
       }
@@ -1093,7 +1702,7 @@
 
     function loadAllData() {
       if (!IS_PREVIEW) {
-        apiRequest('getAllData')
+        return apiRequest('getAllData')
           .then(res => {
             if (res.status === 'success') {
               settingsData = { ...settingsData, ...res.settings };
@@ -1107,6 +1716,7 @@
           .catch(err => showApiError(err, 'Data aplikasi gagal dimuat.'));
       } else {
         renderAllViews();
+        return Promise.resolve({ status: 'success' });
       }
     }
 
@@ -1204,7 +1814,7 @@
       e.preventDefault();
       if (!currentUser.token) {
         openAdminLoginModal();
-        alert('Silakan login Administrator terlebih dahulu untuk menyimpan surat.');
+        alert('Silakan login terlebih dahulu untuk menyimpan surat.');
         return;
       }
 
@@ -1285,9 +1895,7 @@
               <button onclick="editSurat('${s.id}')" title="Edit Data" class="bg-amber-500 hover:bg-amber-600 text-white text-xs px-2.5 py-1.5 rounded shadow">
                 <i class="fa-solid fa-pen"></i>
               </button>
-              <button onclick="deleteSurat('${s.id}')" title="Hapus Surat" class="bg-red-600 hover:bg-red-700 text-white text-xs px-2.5 py-1.5 rounded shadow">
-                <i class="fa-solid fa-trash"></i>
-              </button>
+              ${currentUser && currentUser.role === 'Admin' ? `<button onclick="deleteSurat('${s.id}')" title="Hapus Surat" class="bg-red-600 hover:bg-red-700 text-white text-xs px-2.5 py-1.5 rounded shadow"><i class="fa-solid fa-trash"></i></button>` : ''}
             </div>
           </td>
         </tr>
@@ -1330,6 +1938,7 @@
     }
 
     function deleteSurat(id) {
+      if (!currentUser || currentUser.role !== 'Admin') { alert('Hanya Admin yang dapat menghapus arsip surat.'); return; }
       if (!currentUser.token) {
         openAdminLoginModal();
         return;
@@ -1418,31 +2027,6 @@
     }
 
     /* ==========================================================================
-       USER MANAGEMENT (KHUSUS ADMIN)
-       ========================================================================== */
-    function loadUsers(){
-      if(!currentUser || currentUser.role!=='Admin') return;
-      apiRequest('getUsers').then(res=>{
-        if(res.status!=='success') throw new Error(res.message||'Gagal memuat pengguna.');
-        const tbody=document.getElementById('table-users');
-        tbody.innerHTML=(res.users||[]).map(u=>`<tr class="border-b hover:bg-slate-50"><td class="px-4 py-3 font-semibold">${u.username}</td><td class="px-4 py-3">${u.nama}</td><td class="px-4 py-3"><span class="px-2 py-1 rounded text-xs ${u.role==='Admin'?'bg-indigo-100 text-indigo-700':'bg-emerald-100 text-emerald-700'}">${u.role}</span></td><td class="px-4 py-3">${u.status}</td><td class="px-4 py-3 text-center"><button onclick="deleteUserPrompt('${u.id}','${u.username}')" class="text-red-600 text-xs font-semibold"><i class="fa-solid fa-trash mr-1"></i>Hapus</button></td></tr>`).join('') || '<tr><td colspan="5" class="text-center py-6 text-slate-400">Belum ada pengguna.</td></tr>';
-      }).catch(err=>showApiError(err,'Gagal memuat pengguna.'));
-    }
-    function addUserPrompt(){
-      if(!currentUser || currentUser.role!=='Admin') return openAdminLoginModal();
-      const username=prompt('Username pengguna baru:'); if(!username) return;
-      const password=prompt('Password pengguna baru:'); if(!password) return;
-      const nama=prompt('Nama pengguna:','Operator Surat'); if(!nama) return;
-      const role=(prompt('Role (Admin / Operator):','Operator')||'Operator').trim()==='Admin'?'Admin':'Operator';
-      apiRequest('saveUser',{data:{username,password,nama,role,status:'Aktif'}}).then(res=>{if(res.status!=='success') throw new Error(res.message); loadUsers();}).catch(err=>showApiError(err,'Gagal menambah pengguna.'));
-    }
-    function deleteUserPrompt(id,username){
-      if(username==='admin'){alert('Akun admin utama tidak dapat dihapus.');return;}
-      if(!confirm('Hapus pengguna '+username+'?')) return;
-      apiRequest('deleteUser',{id}).then(res=>{if(res.status!=='success') throw new Error(res.message); loadUsers();}).catch(err=>showApiError(err,'Gagal menghapus pengguna.'));
-    }
-
-    /* ==========================================================================
        SETTINGS MANAGEMENT (KHUSUS ADMIN)
        ========================================================================== */
     function handleSaveSettings(e) {
@@ -1497,12 +2081,12 @@
       if (size === 'a4') {
         btnA4.className = "px-3 py-1 text-xs font-bold rounded-md bg-indigo-600 text-white transition";
         btnF4.className = "px-3 py-1 text-xs font-bold rounded-md text-slate-300 hover:text-white transition";
-        paperContainer.className = "paper-a4 bg-white p-8 sm:p-12 shadow-2xl text-black surat-font text-slate-900 leading-normal";
+        paperContainer.className = "paper-a4 bg-transparent p-8 sm:p-12 shadow-2xl text-black surat-font text-slate-900 leading-normal";
         dynamicStyle.innerHTML = `@page { size: 210mm 297mm; margin: 10mm 15mm; }`;
       } else {
         btnF4.className = "px-3 py-1 text-xs font-bold rounded-md bg-indigo-600 text-white transition";
         btnA4.className = "px-3 py-1 text-xs font-bold rounded-md text-slate-300 hover:text-white transition";
-        paperContainer.className = "paper-f4 bg-white p-8 sm:p-12 shadow-2xl text-black surat-font text-slate-900 leading-normal";
+        paperContainer.className = "paper-f4 bg-transparent p-8 sm:p-12 shadow-2xl text-black surat-font text-slate-900 leading-normal";
         dynamicStyle.innerHTML = `@page { size: 215mm 330mm; margin: 10mm 15mm; }`;
       }
     }
